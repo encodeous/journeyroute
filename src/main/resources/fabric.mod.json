@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "journeyroute",
+  "version": "${version}",
+
+  "name": "JourneyRoute",
+  "description": "A mod that helps you find your way",
+  "authors": [
+    "Encodeous"
+  ],
+  "contact": {
+    "homepage": "https://fabricmc.net/",
+    "sources": "https://github.com/FabricMC/fabric-example-mod"
+  },
+
+  "license": "MIT",
+  "icon": "assets/modid/icon.png",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ca.encodeous.journeyroute.JourneyRoute"
+    ]
+  },
+  "mixins": [
+    "modid.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": ">=0.13.3",
+    "fabric": "*",
+    "minecraft": "1.18.x",
+    "java": ">=17"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}

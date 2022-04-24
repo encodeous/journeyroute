@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "ca.encodeous.journeyroute.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "WorldRendererMixin",
+    "ClientPlayerEntityMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
