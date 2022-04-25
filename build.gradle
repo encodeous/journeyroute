@@ -41,6 +41,12 @@ shadowJar {
 	project.configurations.implementation.canBeResolved = true
 	configurations = [project.configurations.implementation]
 }
+
+prepareRemapJar{
+	dependsOn(shadowJar)
+	mustRunAfter(shadowJar)
+}
+
 remapJar{
 	dependsOn(shadowJar)
 	mustRunAfter(shadowJar)
