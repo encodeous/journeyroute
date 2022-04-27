@@ -1,15 +1,20 @@
 package ca.encodeous.journeyroute.tracker;
 
+import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.events.RenderEvent;
 import ca.encodeous.journeyroute.events.TickEvent;
+import ca.encodeous.journeyroute.utils.WorldUtils;
 import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
 
 import java.awt.*;
 import java.util.ArrayDeque;
+import java.util.Date;
 import java.util.stream.Collectors;
 
 public class MovementTracker {
@@ -19,43 +24,63 @@ public class MovementTracker {
         var curPos = MinecraftClient.getInstance().player.getPos();
         var world = MinecraftClient.getInstance().world;
         var bpos = new BlockPos(curPos);
-        if(MinecraftClient.getInstance().player.getMainHandStack().getItem().isFood()){
-            points.clear();
-        }
-        if(!points.isEmpty()){
-            var prevPos = points.peekLast();
-            if(prevPos.getSquaredDistance(curPos) < 1){
-                return;
+        try{
+            var neighbours = WorldUtils.getTraversableBlocks(world, bpos, 4);
+            var date = new Date();
+            for(var v : neighbours){
+                var node = JourneyRoute.INSTANCE.World.getNode(v.pos);
+                node.lastVisit = date.getTime();
+                node.weighting = Math.min(node.weighting, v.dist / 4.0);
             }
+        }catch(Exception e){
+            System.out.println(e.getMessage());
         }
-        points.add(bpos);
-        if(points.size() > 1000){
-            points.poll();
+        if(MinecraftClient.getInstance().player.getMainHandStack().getItem().isFood()){
+            JourneyRoute.INSTANCE.World.nodeMap.clear();
         }
+//        if(!points.isEmpty()){
+//            var prevPos = points.peekLast();
+//            if(prevPos.getSquaredDistance(curPos) < 1){
+//                return;
+//            }
+//        }
+//        points.add(bpos);
+//        if(points.size() > 1000){
+//            points.poll();
+//        }
     }
     @EventHandler
     private static void render(RenderEvent event){
-        if(points.size() >= 2){
-            var tmp =
-                    points.stream().map((citr)->new Vec3d(citr.getX() + 0.5, citr.getY() + 0.5, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
-            tmp = rdpSimplification(1, tmp);
-            for(int i = 0; i < 4; i++){
-                tmp = chaikinIter(0.25, tmp);
+        var renderer = event.getRenderer();
+        try{
+            for(var x : JourneyRoute.INSTANCE.World.nodeMap.entrySet()){
+                var pt = x.getKey();
+                renderer.drawShapeOutline(VoxelShapes.fullCube(), new Vec3d(pt.getX(), pt.getY(), pt.getZ()), new Color(100, 100, 250, 255 - (int)(x.getValue().weighting * 254)), 1.01f);
             }
-            var itr = tmp.iterator();
-            Vec3d prev = null;
-            while(itr.hasNext()){
-                if(prev == null){
-                    prev = itr.next();
-                }
-                else{
-                    var citr = itr.next();
-                    Vec3d cur = citr;
-                    event.getRenderer().drawLine(prev, cur, Color.CYAN);
-                    prev = cur;
-                }
-            }
+        }catch (Exception e){
+            System.out.println(e.getMessage());
         }
+//        if(points.size() >= 2){
+//            var tmp =
+//                    points.stream().map((citr)->new Vec3d(citr.getX() + 0.5, citr.getY() + 0.5, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
+////            tmp = rdpSimplification(1, tmp);
+////            for(int i = 0; i < 4; i++){
+////                tmp = chaikinIter(0.25, tmp);
+////            }
+//            var itr = tmp.iterator();
+//            Vec3d prev = null;
+//            while(itr.hasNext()){
+//                if(prev == null){
+//                    prev = itr.next();
+//                }
+//                else{
+//                    var citr = itr.next();
+//                    Vec3d cur = citr;
+//                    event.getRenderer().drawLine(prev, cur, Color.CYAN);
+//                    prev = cur;
+//                }
+//            }
+//        }
     }
 
     public static double getDist(Vec3d ep1, Vec3d ep2, Vec3d pt){
