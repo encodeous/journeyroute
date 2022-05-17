@@ -31,12 +31,19 @@ public class MovementTracker {
                 var node = JourneyRoute.INSTANCE.World.getNode(v.pos);
                 node.lastVisit = date.getTime();
                 node.weighting = Math.min(node.weighting, v.dist / 4.0);
+                node.isAir = false;
+            }
+            var air = WorldUtils.getSurroundingAir(world, bpos, 4);
+            for(var v : air){
+                var node = JourneyRoute.INSTANCE.World.getNode(v.pos);
+                node.lastVisit = date.getTime();
+                node.weighting = Math.min(node.weighting, v.dist / 4.0);
             }
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
         if(MinecraftClient.getInstance().player.getMainHandStack().getItem().isFood()){
-            JourneyRoute.INSTANCE.World.nodeMap.clear();
+            JourneyRoute.INSTANCE.World.ChunkMap.clear();
         }
 //        if(!points.isEmpty()){
 //            var prevPos = points.peekLast();
@@ -53,9 +60,14 @@ public class MovementTracker {
     private static void render(RenderEvent event){
         var renderer = event.getRenderer();
         try{
-            for(var x : JourneyRoute.INSTANCE.World.nodeMap.entrySet()){
-                var pt = x.getKey();
-                renderer.drawShapeOutline(VoxelShapes.fullCube(), new Vec3d(pt.getX(), pt.getY(), pt.getZ()), new Color(100, 100, 250, 255 - (int)(x.getValue().weighting * 254)), 1.01f);
+            if(JourneyRoute.Route != null){
+                var camPos = MinecraftClient.getInstance().cameraEntity.getPos();
+                for(var x : JourneyRoute.Route.Path){
+                    var pt = x;
+                    if(pt.isWithinDistance(camPos, MinecraftClient.getInstance().worldRenderer.getViewDistance() * 16)){
+                        renderer.drawShapeOutline(VoxelShapes.fullCube(), new Vec3d(pt.getX(), pt.getY(), pt.getZ()), new Color(100, 100, 250, 180), 1.01f);
+                    }
+                }
             }
         }catch (Exception e){
             System.out.println(e.getMessage());

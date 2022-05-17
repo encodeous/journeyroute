@@ -5,15 +5,15 @@ import net.minecraft.util.math.Vec3i;
 
 import java.util.HashMap;
 
-public class RouteChunk implements DataStorable {
+public class WorldChunk implements DataStorable {
     public int chunkX, chunkZ;
-    public HashMap<Vec3i, RouteNode> NodeMap;
-    public RouteChunk(int x, int z){
+    public HashMap<Vec3i, WorldNode> NodeMap;
+    public WorldChunk(int x, int z){
         chunkX = x;
         chunkZ = z;
         NodeMap = new HashMap<>();
     }
-    public RouteChunk(){
+    public WorldChunk(){
 
     }
     @Override
@@ -36,7 +36,7 @@ public class RouteChunk implements DataStorable {
         int len = in.getInt("rl");
         NodeMap = new HashMap<>(len);
         for(int i = 0; i < len; i++){
-            var nn = new RouteNode();
+            var nn = new WorldNode();
             nn.read((NbtCompound) in.get("rd" + i));
             NodeMap.put(new Vec3i(nn.worldX, nn.worldY, nn.worldZ), nn);
         }
