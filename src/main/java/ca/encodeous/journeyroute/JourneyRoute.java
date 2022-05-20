@@ -11,8 +11,10 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.Vec3i;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -39,15 +41,21 @@ public class JourneyRoute implements ModInitializer {
 		// Proceed with mild caution.
 
 		guiBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.journeyroute.route", // The translation key of the keybinding's name
+				"Open Router", // The translation key of the keybinding's name
 				InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
 				GLFW.GLFW_KEY_R, // The keycode of the key
-				"category.journeyroute.route" // The translation key of the keybinding's category.
+				"JourneyRoute" // The translation key of the keybinding's category.
 		));
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (guiBinding.wasPressed()) {
-				client.setScreen(new RouterScreen(new RouterGui()));
+			if (guiBinding.wasPressed()) {
+				try{
+					var screen = new RouterScreen(new RouterGui());
+					client.setScreen(screen);
+				}catch (Exception e){
+					MinecraftClient.getInstance().player.sendMessage(Text.of("Unable to open GUI, " + e.getMessage()), false);
+					e.printStackTrace();
+				}
 			}
 		});
 
