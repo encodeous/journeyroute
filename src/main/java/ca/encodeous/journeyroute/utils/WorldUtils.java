@@ -3,9 +3,9 @@ package ca.encodeous.journeyroute.utils;
 import ca.encodeous.journeyroute.world.JourneyWorld;
 import ca.encodeous.journeyroute.world.RouteNode;
 import ca.encodeous.journeyroute.world.WorldNode;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.Level;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -39,7 +39,7 @@ public class WorldUtils {
             mvarr3 = {0, 0, 0, 0, 1, -1},
             mvarc3 = {0, 0, 1, -1, 0, 0},
             mvarz3 = {1, -1, 0, 0, 0, 0};
-    public static HashSet<QueuedBlock> getTraversableBlocks(ClientWorld world, Vec3i originPos, int radius){
+    public static HashSet<QueuedBlock> getTraversableBlocks(Level world, Vec3i originPos, int radius){
         var visited = new HashSet<QueuedBlock>();
         if(originPos == null) return visited;
         var dq = new ArrayDeque<QueuedBlock>();
@@ -87,7 +87,7 @@ public class WorldUtils {
         return visited.stream().map(x->world.getNode(x.pos)).toList();
     }
 
-    public static List<QueuedBlock> getSurroundingAir(ClientWorld world, Vec3i originPos, int radius){
+    public static List<QueuedBlock> getSurroundingAir(Level world, Vec3i originPos, int radius){
         var visited = new HashSet<QueuedBlock>();
         if(originPos == null) return Collections.emptyList();
         var dq = new ArrayDeque<QueuedBlock>();
@@ -137,7 +137,7 @@ public class WorldUtils {
         return visited.stream().map(x->world.getNode(x.pos)).toList();
     }
 
-    public static BlockPos getSurfaceLevelBlock(ClientWorld world, Vec3i pos){
+    public static BlockPos getSurfaceLevelBlock(Level world, Vec3i pos){
         for(int i = -2; i <= 2; i++){
             var cpos = new BlockPos(pos.getX(), i + pos.getY(), pos.getZ());
             if(checkWalkableBlock(world, cpos)){
@@ -155,21 +155,21 @@ public class WorldUtils {
         }
         return null;
     }
-    private static boolean isWalkableThrough(ClientWorld world, BlockPos pos){
+    private static boolean isWalkableThrough(Level world, BlockPos pos){
         var state = world.getBlockState(pos);
         if(state.isAir()) return true;
-        if(!state.getMaterial().blocksMovement()) return true;
+        if(!state.getMaterial().blocksMotion()) return true;
         return false;
     }
     private static boolean isWalkableThrough(JourneyWorld world, Vec3i pos){
         if(!world.hasNode(pos)) return false;
         return world.getNode(pos).isAir;
     }
-    private static boolean checkWalkableBlock(ClientWorld world, BlockPos pos){
-        return !isWalkableThrough(world, pos) && isWalkableThrough(world, pos.up()) && isWalkableThrough(world, pos.up(2));
+    private static boolean checkWalkableBlock(Level world, BlockPos pos){
+        return !isWalkableThrough(world, pos) && isWalkableThrough(world, pos.above()) && isWalkableThrough(world, pos.above(2));
     }
     private static boolean checkWalkableBlock(JourneyWorld world, Vec3i pos){
-        if(!world.hasNode(pos) || !world.hasNode(pos.up()) || !world.hasNode(pos.up(2))) return false;
-        return !isWalkableThrough(world, pos) && isWalkableThrough(world, pos.up()) && isWalkableThrough(world, pos.up(2));
+        if(!world.hasNode(pos) || !world.hasNode(pos.above()) || !world.hasNode(pos.above(2))) return false;
+        return !isWalkableThrough(world, pos) && isWalkableThrough(world, pos.above()) && isWalkableThrough(world, pos.above(2));
     }
 }

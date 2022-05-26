@@ -1,6 +1,6 @@
 package ca.encodeous.journeyroute.world;
 
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;

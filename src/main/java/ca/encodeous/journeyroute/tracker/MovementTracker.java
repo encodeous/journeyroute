@@ -5,12 +5,11 @@ import ca.encodeous.journeyroute.events.RenderEvent;
 import ca.encodeous.journeyroute.events.TickEvent;
 import ca.encodeous.journeyroute.utils.WorldUtils;
 import meteordevelopment.orbit.EventHandler;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
 
 import java.awt.*;
 import java.util.ArrayDeque;
@@ -21,8 +20,8 @@ public class MovementTracker {
     private static ArrayDeque<Vec3i> points = new ArrayDeque<>();
     @EventHandler
     public static void tick(TickEvent event){
-        var curPos = MinecraftClient.getInstance().player.getPos();
-        var world = MinecraftClient.getInstance().world;
+        var curPos = Minecraft.getInstance().player.position();
+        var world = Minecraft.getInstance().level;
         var bpos = new BlockPos(curPos);
         try{
             var neighbours = WorldUtils.getTraversableBlocks(world, bpos, 4);
@@ -42,7 +41,7 @@ public class MovementTracker {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-        if(MinecraftClient.getInstance().player.getMainHandStack().getItem().isFood()){
+        if(Minecraft.getInstance().player.getMainHandItem().getItem().isEdible()){
             JourneyRoute.INSTANCE.World.ChunkMap.clear();
         }
 //        if(!points.isEmpty()){
@@ -61,11 +60,11 @@ public class MovementTracker {
         var renderer = event.getRenderer();
         try{
             if(JourneyRoute.Route != null){
-                var camPos = MinecraftClient.getInstance().cameraEntity.getPos();
+                var camPos = Minecraft.getInstance().cameraEntity.position();
                 for(var x : JourneyRoute.Route.Path){
                     var pt = x;
-                    if(pt.isWithinDistance(camPos, MinecraftClient.getInstance().worldRenderer.getViewDistance() * 16)){
-                        renderer.drawShapeOutline(VoxelShapes.fullCube(), new Vec3d(pt.getX(), pt.getY(), pt.getZ()), new Color(100, 100, 250, 180), 1.01f);
+                    if(pt.closerToCenterThan(camPos, Minecraft.getInstance().levelRenderer.getLastViewDistance() * 16)){
+                        renderer.drawShapeOutline(Shapes.block(), new Vec3(pt.getX(), pt.getY(), pt.getZ()), new Color(100, 100, 250, 180), 1.01f);
                     }
                 }
             }
@@ -74,20 +73,20 @@ public class MovementTracker {
         }
 //        if(points.size() >= 2){
 //            var tmp =
-//                    points.stream().map((citr)->new Vec3d(citr.getX() + 0.5, citr.getY() + 0.5, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
+//                    points.stream().map((citr)->new Vec3(citr.getX() + 0.5, citr.getY() + 0.5, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
 ////            tmp = rdpSimplification(1, tmp);
 ////            for(int i = 0; i < 4; i++){
 ////                tmp = chaikinIter(0.25, tmp);
 ////            }
 //            var itr = tmp.iterator();
-//            Vec3d prev = null;
+//            Vec3 prev = null;
 //            while(itr.hasNext()){
 //                if(prev == null){
 //                    prev = itr.next();
 //                }
 //                else{
 //                    var citr = itr.next();
-//                    Vec3d cur = citr;
+//                    Vec3 cur = citr;
 //                    event.getRenderer().drawLine(prev, cur, Color.CYAN);
 //                    prev = cur;
 //                }
@@ -95,20 +94,20 @@ public class MovementTracker {
 //        }
     }
 
-    public static double getDist(Vec3d ep1, Vec3d ep2, Vec3d pt){
+    public static double getDist(Vec3 ep1, Vec3 ep2, Vec3 pt){
         // https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         var d1 = pt.subtract(ep1);
         var d2 = pt.subtract(ep2);
         var d3 = ep2.subtract(ep1);
-        return (d1.crossProduct(d2).length()) / d3.length();
+        return (d1.cross(d2).length()) / d3.length();
     }
 
-    public static ArrayDeque<Vec3d> rdpSimplification(double epsilon, ArrayDeque<Vec3d> input){
+    public static ArrayDeque<Vec3> rdpSimplification(double epsilon, ArrayDeque<Vec3> input){
         if(input.size() <= 1) return input;
         var p1 = input.getFirst();
         var p2 = input.getLast();
-        var arr1 = new ArrayDeque<Vec3d>();
-        var arr2 = new ArrayDeque<Vec3d>();
+        var arr1 = new ArrayDeque<Vec3>();
+        var arr2 = new ArrayDeque<Vec3>();
         int idx = 0;
         double md = 0;
         int mdi = 0;
@@ -123,7 +122,7 @@ public class MovementTracker {
             idx++;
         }
         if(md < epsilon || input.size() == 2){
-            var deq = new ArrayDeque<Vec3d>();
+            var deq = new ArrayDeque<Vec3>();
             deq.add(p1);
             deq.add(p2);
             return deq;
@@ -142,7 +141,7 @@ public class MovementTracker {
             }
             idx++;
         }
-        var ans = new ArrayDeque<Vec3d>();
+        var ans = new ArrayDeque<Vec3>();
         var a1 = rdpSimplification(epsilon, arr1);
         a1.removeLast();
         var a2 = rdpSimplification(epsilon, arr2);
@@ -155,10 +154,10 @@ public class MovementTracker {
         return ans;
     }
 
-    public static ArrayDeque<Vec3d> chaikinIter(double subdivideAmount, ArrayDeque<Vec3d> input){
-        var output = new ArrayDeque<Vec3d>();
+    public static ArrayDeque<Vec3> chaikinIter(double subdivideAmount, ArrayDeque<Vec3> input){
+        var output = new ArrayDeque<Vec3>();
         var itr = input.iterator();
-        Vec3d prev = null;
+        Vec3 prev = null;
         output.add(input.getFirst());
         while(itr.hasNext()){
             if(prev == null){
@@ -168,8 +167,8 @@ public class MovementTracker {
                 var cur = itr.next();
                 double dist = cur.distanceTo(prev);
                 var dir = cur.subtract(prev).normalize();
-                output.add(prev.add(dir.multiply(dist * subdivideAmount)));
-                output.add(cur.add(dir.multiply(dist * -subdivideAmount)));
+                output.add(prev.add(dir.scale(dist * subdivideAmount)));
+                output.add(cur.add(dir.scale(dist * -subdivideAmount)));
                 prev = cur;
             }
         }

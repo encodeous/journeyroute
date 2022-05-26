@@ -2,8 +2,8 @@ package ca.encodeous.journeyroute.world;
 
 import ca.encodeous.journeyroute.Config;
 import ca.encodeous.journeyroute.utils.WorldUtils;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.util.math.Vec3i;
+import net.minecraft.core.Vec3i;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
 import java.util.PriorityQueue;
@@ -47,12 +47,12 @@ public class JourneyWorld implements DataStorable {
     }
 
     @Override
-    public void write(NbtCompound out) {
+    public void write(CompoundTag out) {
 
     }
 
     @Override
-    public void read(NbtCompound in) {
+    public void read(CompoundTag in) {
         ChunkMap = new HashMap<>();
     }
 
@@ -75,9 +75,9 @@ public class JourneyWorld implements DataStorable {
             double w = v.weight;
             if(dist.getOrDefault(v.pos, 1e17) < w) continue;
             for(var block : WorldUtils.getTraversableBlocks(this, v.pos, 1)){
-                double heurWeight = cur.getSquaredDistance(dest);
+                double heurWeight = cur.distSqr(dest);
                 var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
-                double newWeight = w + Math.sqrt(v.pos.getSquaredDistance(nPos)) + block.weighting;
+                double newWeight = w + Math.sqrt(v.pos.distSqr(nPos)) + block.weighting;
                 if(newWeight < dist.getOrDefault(nPos, 1e17)){
                     dist.put(nPos, newWeight);
                     prev.put(nPos, v.pos);
@@ -86,9 +86,9 @@ public class JourneyWorld implements DataStorable {
             }
 
             for(var block : WorldUtils.getSurroundingAir(this, v.pos, 1)){
-                double heurWeight = cur.getSquaredDistance(dest) + Config.AIR_WEIGHT;
+                double heurWeight = cur.distSqr(dest) + Config.AIR_WEIGHT;
                 var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
-                double newWeight = w + Math.sqrt(v.pos.getSquaredDistance(nPos)) + block.weighting + Config.AIR_WEIGHT;
+                double newWeight = w + Math.sqrt(v.pos.distSqr(nPos)) + block.weighting + Config.AIR_WEIGHT;
                 if(newWeight < dist.getOrDefault(nPos, 1e17)){
                     dist.put(nPos, newWeight);
                     prev.put(nPos, v.pos);

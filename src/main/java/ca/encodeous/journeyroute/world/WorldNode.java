@@ -1,6 +1,6 @@
 package ca.encodeous.journeyroute.world;
 
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.CompoundTag;
 
 import java.util.Objects;
 
@@ -38,12 +38,12 @@ public class WorldNode implements DataStorable {
     public int worldZ;
 
     @Override
-    public void write(NbtCompound out) {
+    public void write(CompoundTag out) {
 
     }
 
     @Override
-    public void read(NbtCompound in) {
+    public void read(CompoundTag in) {
 
     }
 }

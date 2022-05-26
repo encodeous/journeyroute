@@ -23,7 +23,7 @@
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "journeyroute.mixins.json"
   ],
 
   "depends": {
@@ -34,5 +34,8 @@
   },
   "suggests": {
     "another-mod": "*"
-  }
+  },
+  "journeymap": [
+    "ca.encodeous.journeyroute.journeymap.JourneyMapPlugin"
+  ]
 }

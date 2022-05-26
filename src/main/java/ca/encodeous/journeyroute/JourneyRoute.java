@@ -7,15 +7,17 @@ import ca.encodeous.journeyroute.tracker.MovementTracker;
 import ca.encodeous.journeyroute.utils.WorldUtils;
 import ca.encodeous.journeyroute.world.Route;
 import ca.encodeous.journeyroute.world.JourneyWorld;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec3i;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.Vec3i;
+import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,12 +28,13 @@ public class JourneyRoute implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.
 	// That way, it's clear which mod wrote info, warnings, and errors.
-	public static final Logger LOGGER = LoggerFactory.getLogger("modid");
+	public static final String MODID = "journeyroute";
+	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 	public static JourneyRoute INSTANCE;
 	public JourneyWorld World = new JourneyWorld();
 	public static Vec3i RouteDest;
 	public static Route Route;
-	private static KeyBinding guiBinding;
+	private static KeyMapping guiBinding;
 
 	@Override
 	public void onInitialize() {
@@ -40,20 +43,19 @@ public class JourneyRoute implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
-		guiBinding = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+		guiBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 				"Open Router", // The translation key of the keybinding's name
-				InputUtil.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
+				InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
 				GLFW.GLFW_KEY_R, // The keycode of the key
 				"JourneyRoute" // The translation key of the keybinding's category.
 		));
-
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (guiBinding.wasPressed()) {
+			if (guiBinding.isDown()) {
 				try{
 					var screen = new RouterScreen(new RouterGui());
 					client.setScreen(screen);
 				}catch (Exception e){
-					MinecraftClient.getInstance().player.sendMessage(Text.of("Unable to open GUI, " + e.getMessage()), false);
+					Minecraft.getInstance().player.displayClientMessage(new TextComponent("Unable to open GUI, " + e.getMessage()), false);
 					e.printStackTrace();
 				}
 			}
@@ -64,16 +66,16 @@ public class JourneyRoute implements ModInitializer {
 		EventManager.BUS.subscribe(MovementTracker.class);
 		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("waypoint")
 				.executes(source -> {
-					RouteDest = WorldUtils.getSurfaceLevelBlock(source.getSource().getWorld(), source.getSource().getEntity().getBlockPos());
+					RouteDest = WorldUtils.getSurfaceLevelBlock(source.getSource().getWorld(), source.getSource().getEntity().blockPosition());
 					if(RouteDest == null){
-						RouteDest = source.getSource().getEntity().getBlockPos();
+						RouteDest = source.getSource().getEntity().blockPosition();
 					}
 					return 1;
 				}));
 		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("route")
 				.executes(source -> {
 					if(RouteDest == null) return 0;
-					Route = World.getRouteTo(source.getSource().getEntity().getBlockPos(), RouteDest);
+					Route = World.getRouteTo(source.getSource().getEntity().blockPosition(), RouteDest);
 					return 1;
 				}));
 	}

@@ -1,83 +1,95 @@
 package ca.encodeous.journeyroute.gui;
 
+import ca.encodeous.journeyroute.querying.QueryEngine;
+import ca.encodeous.journeyroute.querying.QueryResultWidget;
 import io.github.cottonmc.cotton.gui.client.LightweightGuiDescription;
 import io.github.cottonmc.cotton.gui.widget.*;
 import io.github.cottonmc.cotton.gui.widget.data.Insets;
 import io.github.cottonmc.cotton.gui.widget.data.VerticalAlignment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.text.LiteralText;
-import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Identifier;
-
-import java.io.PrintStream;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
 
 public class RouterGui extends LightweightGuiDescription {
     public RouterGui(){
         generateGui();
     }
 
-    private WGridPanel advancedPanel, simplifiedPanel;
+    private WPlainPanel advancedPanel, simplifiedPanel;
     private boolean isAdvanced = false;
-    private WGridPanel root;
+    private WPlainPanel root;
+    private final int grid = 18;
 
     private void generateGui(){
         int width = 18 * 15;
         int height = 13 * 15;
-        root = new WGridPanel();
+        root = new WPlainPanel();
         setRootPanel(root);
         root.setSize(width, height);
         root.setInsets(Insets.ROOT_PANEL);
 
-        var title = new WText(new LiteralText("JourneyRoute - Path Router"));
+        var title = new WText(new TextComponent("JourneyRoute - Path Router").setStyle(Style.EMPTY.withBold(true)));
         title.setVerticalAlignment(VerticalAlignment.CENTER);
-        root.add(title, 0, 0, 10, 1);
+        root.add(title, 0, 0, 10 * grid, grid);
 
-        advancedPanel = generateAdvancedPanel();
-        simplifiedPanel = generateSimplifiedPanel();
+        // searcher
 
-        var advanced = new WToggleButton();
-        advanced.setLabel(Text.of("Show Advanced Router"));
-        advanced.setOnToggle((val)->{
-            isAdvanced = val.booleanValue();
-            updatePanel();
-        });
-        root.add(advanced, 10, 0, 6, 1);
+        root.add(createSearcher(), 6, grid + 5, 10 * grid, 10 * grid);
 
-        updatePanel();
+        // route
+
+        root.add(createRoutePlan(), 11 * grid, grid + 5, 8 * grid, 10 * grid);
 
         // bottom actions
 
-        var generateRoute = new WButton(new TranslatableText("Generate Route"));
-        root.add(generateRoute, 7, 12, 6, 1);
-        WButton button = new WButton(new TranslatableText("Clear Route"));
-        root.add(button, 13, 12, 5, 1);
+        var generateRoute = new WButton(new TextComponent("Generate Route"));
+        root.add(generateRoute, 0, 12 * grid, 6 * grid, grid);
+        WButton button = new WButton(new TextComponent("Clear Route"));
+        root.add(button, 6 * grid, 12 * grid, 5 * grid, grid);
         root.validate(this);
     }
+    private boolean isEven = true;
+    private WWidget createSearcher(){
+        var panel = new WPlainPanel();
+        var searchBar = new WTextField();
+        searchBar.setSuggestion(new TextComponent("Enter Query"));
+        searchBar.setEditable(true);
+        searchBar.setMaxLength(100);
 
-    private void updatePanel(){
-        if(isAdvanced){
-            root.remove(simplifiedPanel);
-            root.add(advancedPanel, 1, 1);
-        }else{
-            root.remove(advancedPanel);
-            root.add(simplifiedPanel, 1, 1);
-        }
-    }
+        var resultsList = new SearchPanel(QueryEngine.getResultsForQuery(""), QueryResultWidget::new, (x, y)->{
+            y.configureWidget(x, isEven);
+            isEven = !isEven;
+        });
+        resultsList.setListItemHeight(2 * 15);
 
-    private WGridPanel generateAdvancedPanel(){
-        var panel = new WGridPanel();
-        panel.setSize(17, 10);
-        panel.setInsets(Insets.NONE);
-        panel.add(new WText(new LiteralText("Advanced Routing")), 0, 0, 5, 1);
+        searchBar.setChangedListener((s)->{
+            resultsList.setData(QueryEngine.getResultsForQuery(s));
+        });
+
+        var label = new WText(new TextComponent("Search for Destinations"));
+
+        panel.add(label, 0, 0, 10 * grid, grid);
+        panel.add(searchBar, 0, 10, 10 * grid, grid);
+        panel.add(resultsList, 0, 2 * grid + 2, 10 * grid, 8 * grid);
         return panel;
     }
 
-    private WGridPanel generateSimplifiedPanel(){
-        var panel = new WGridPanel();
-        panel.setSize(17, 10);
-        panel.setInsets(Insets.NONE);
-        panel.add(new WText(new LiteralText("Quick Routing")), 0, 0, 5, 1);
+    private WWidget createRoutePlan(){
+        var panel = new WPlainPanel();
+        var routeNodes = new SearchPanel(QueryEngine.getResultsForQuery(""), QueryResultWidget::new, (x, y)->{
+            y.configureWidget(x, isEven);
+            isEven = !isEven;
+        });
+        routeNodes.setListItemHeight(15);
+        var label = new WText(new TextComponent("Route Plan"));
+
+        var importBtn = new WButton(new TextComponent("Import"));
+        var saveBtn = new WButton(new TextComponent("Save"));
+        panel.add(importBtn, 0, 10, 3 * grid, grid);
+        panel.add(saveBtn, 3 * grid, 10, 3 * grid, grid);
+
+        panel.add(label, 0, 0, 7 * grid, grid);
+        panel.add(routeNodes, 0, 2 * grid + 2, 7 * grid + 7, 8 * grid);
         return panel;
     }
 }
