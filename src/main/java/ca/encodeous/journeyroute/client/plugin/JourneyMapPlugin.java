@@ -6,9 +6,10 @@ import journeymap.client.api.IClientPlugin;
 import journeymap.client.api.event.ClientEvent;
 
 public class JourneyMapPlugin implements IClientPlugin {
+    public static IClientAPI CLIENT;
     @Override
     public void initialize(IClientAPI jmClientApi) {
-        System.out.println("Initialized");
+        CLIENT = jmClientApi;
     }
 
     @Override

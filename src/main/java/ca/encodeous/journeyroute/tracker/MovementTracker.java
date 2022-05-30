@@ -39,9 +39,9 @@ public class MovementTracker {
         }catch(Exception e){
             System.out.println(e.getMessage());
         }
-        if(Minecraft.getInstance().player.getMainHandItem().getItem().isEdible()){
-            JourneyRoute.INSTANCE.World.ChunkMap.clear();
-        }
+//        if(Minecraft.getInstance().player.getMainHandItem().getItem().isEdible()){
+//            JourneyRoute.INSTANCE.World.ChunkMap.clear();
+//        }
 //        if(!points.isEmpty()){
 //            var prevPos = points.peekLast();
 //            if(prevPos.getSquaredDistance(curPos) < 1){
