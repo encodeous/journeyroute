@@ -14,12 +14,15 @@
   },
 
   "license": "MIT",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/journeyroute/icon.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
       "ca.encodeous.journeyroute.JourneyRoute"
+    ],
+    "journeymap": [
+      "ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin"
     ]
   },
   "mixins": [
@@ -31,11 +34,5 @@
     "fabric": "*",
     "minecraft": "1.18.x",
     "java": ">=17"
-  },
-  "suggests": {
-    "another-mod": "*"
-  },
-  "journeymap": [
-    "ca.encodeous.journeyroute.journeymap.JourneyMapPlugin"
-  ]
+  }
 }

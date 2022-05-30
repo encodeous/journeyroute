@@ -4,7 +4,6 @@ import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.events.RenderEvent;
 import ca.encodeous.journeyroute.events.TickEvent;
 import ca.encodeous.journeyroute.utils.WorldUtils;
-import meteordevelopment.orbit.EventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
@@ -18,7 +17,6 @@ import java.util.stream.Collectors;
 
 public class MovementTracker {
     private static ArrayDeque<Vec3i> points = new ArrayDeque<>();
-    @EventHandler
     public static void tick(TickEvent event){
         var curPos = Minecraft.getInstance().player.position();
         var world = Minecraft.getInstance().level;
@@ -55,8 +53,7 @@ public class MovementTracker {
 //            points.poll();
 //        }
     }
-    @EventHandler
-    private static void render(RenderEvent event){
+    public static void render(RenderEvent event){
         var renderer = event.getRenderer();
         try{
             if(JourneyRoute.Route != null){

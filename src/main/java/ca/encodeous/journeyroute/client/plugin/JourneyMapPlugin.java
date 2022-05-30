@@ -1,4 +1,4 @@
-package ca.encodeous.journeyroute.journeymap;
+package ca.encodeous.journeyroute.client.plugin;
 
 import ca.encodeous.journeyroute.JourneyRoute;
 import journeymap.client.api.IClientAPI;
@@ -8,7 +8,7 @@ import journeymap.client.api.event.ClientEvent;
 public class JourneyMapPlugin implements IClientPlugin {
     @Override
     public void initialize(IClientAPI jmClientApi) {
-
+        System.out.println("Initialized");
     }
 
     @Override

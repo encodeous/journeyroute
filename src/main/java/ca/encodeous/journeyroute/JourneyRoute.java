@@ -1,6 +1,5 @@
 package ca.encodeous.journeyroute;
 
-import ca.encodeous.journeyroute.events.EventManager;
 import ca.encodeous.journeyroute.gui.RouterGui;
 import ca.encodeous.journeyroute.gui.RouterScreen;
 import ca.encodeous.journeyroute.tracker.MovementTracker;
@@ -10,12 +9,12 @@ import ca.encodeous.journeyroute.world.JourneyWorld;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
@@ -49,6 +48,7 @@ public class JourneyRoute implements ModInitializer {
 				GLFW.GLFW_KEY_R, // The keycode of the key
 				"JourneyRoute" // The translation key of the keybinding's category.
 		));
+//		RendererAccess.INSTANCE.getRenderer().meshBuilder().getEmitter().
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			if (guiBinding.isDown()) {
 				try{
@@ -62,8 +62,6 @@ public class JourneyRoute implements ModInitializer {
 		});
 
 		LOGGER.info("Hello Fabric world!");
-		EventManager.BUS.registerLambdaFactory("ca.encodeous.journeyroute", (lookupInMethod, klass) -> (MethodHandles.Lookup) lookupInMethod.invoke(null, klass, MethodHandles.lookup()));
-		EventManager.BUS.subscribe(MovementTracker.class);
 		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("waypoint")
 				.executes(source -> {
 					RouteDest = WorldUtils.getSurfaceLevelBlock(source.getSource().getWorld(), source.getSource().getEntity().blockPosition());

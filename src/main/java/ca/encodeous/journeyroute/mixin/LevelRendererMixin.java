@@ -1,8 +1,8 @@
 package ca.encodeous.journeyroute.mixin;
 
-import ca.encodeous.journeyroute.events.EventManager;
 import ca.encodeous.journeyroute.events.RenderEvent;
 import ca.encodeous.journeyroute.rendering.Renderer;
+import ca.encodeous.journeyroute.tracker.MovementTracker;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
@@ -33,7 +33,7 @@ public class LevelRendererMixin {
         matrices.translate(-camera.getPosition().x, -camera.getPosition().y, -camera.getPosition().z);
         var renderer = new Renderer(renderBuffers, matrices);
 
-        EventManager.BUS.post(new RenderEvent(renderer));
+        MovementTracker.render(new RenderEvent(renderer));
 
         matrices.popPose();
         RenderSystem.applyModelViewMatrix();
