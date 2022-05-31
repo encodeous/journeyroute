@@ -2,6 +2,7 @@ package ca.encodeous.journeyroute.querying;
 
 import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
+import ca.encodeous.journeyroute.utils.TextUtils;
 import ca.encodeous.journeyroute.world.JourneyWorld;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -24,16 +25,18 @@ public class QueryEngine {
                 int z = Integer.parseInt(matcher.group(3));
                 if(y > Minecraft.getInstance().level.getMinBuildHeight() && y < Minecraft.getInstance().level.getMaxBuildHeight()){
                     var pos = new BlockPos(x, y, z);
-                    results.add(new QueryResult("Coordinate at @ " + pos, pos, JourneyRoute.INSTANCE.World.hasNode(pos), null));
+                    results.add(new QueryResult("World @ " + TextUtils.formatCoordinate(pos), pos, JourneyRoute.INSTANCE.World.hasNode(pos), null));
                 }
-            }catch(NumberFormatException e){
+            }
+            catch(NumberFormatException e){
 
             }
         }
         var waypoints = JourneyMapPlugin.CLIENT.getAllWaypoints();
         for (var waypoint : waypoints) {
             if(waypoint.getName().toLowerCase().contains(query.toLowerCase())){
-                results.add(new QueryResult("JM Waypoint @ " + waypoint.getPosition(),  waypoint.getPosition(), true, waypoint));
+
+                results.add(new QueryResult(waypoint.getName() + " @ " + TextUtils.formatCoordinate(waypoint.getPosition()),  waypoint.getPosition(), true, waypoint));
             }
         }
         return results;
