@@ -1,9 +1,11 @@
 package ca.encodeous.journeyroute.world;
 
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class WorldChunk implements DataStorable {
     public int chunkX, chunkZ;
@@ -17,27 +19,24 @@ public class WorldChunk implements DataStorable {
 
     }
     @Override
-    public void write(CompoundTag out) {
-        out.putInt("x", chunkX);
-        out.putInt("z", chunkZ);
-        var nodes = NodeMap.values().stream().toList();
-        out.putInt("rl", nodes.size());
-        for(int i = 0; i < nodes.size(); i++){
-            var cmp = new CompoundTag();
-            nodes.get(i).write(cmp);
-            out.put("rd" + i, cmp);
+    public void write(ByteBuf out) {
+        out.writeInt(chunkX);
+        out.writeInt(chunkZ);
+        out.writeInt(NodeMap.size());
+        for (var v : NodeMap.values()) {
+            v.write(out);
         }
     }
 
     @Override
-    public void read(CompoundTag in) {
-        chunkX = in.getInt("x");
-        chunkZ = in.getInt("z");
-        int len = in.getInt("rl");
+    public void read(ByteBuf in) {
+        chunkX = in.readInt();
+        chunkZ = in.readInt();
+        int len = in.readInt();
         NodeMap = new HashMap<>(len);
         for(int i = 0; i < len; i++){
             var nn = new WorldNode();
-            nn.read((CompoundTag) in.get("rd" + i));
+            nn.read(in);
             NodeMap.put(new Vec3i(nn.worldX, nn.worldY, nn.worldZ), nn);
         }
     }

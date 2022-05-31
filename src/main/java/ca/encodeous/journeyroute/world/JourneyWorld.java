@@ -2,10 +2,12 @@ package ca.encodeous.journeyroute.world;
 
 import ca.encodeous.journeyroute.Config;
 import ca.encodeous.journeyroute.utils.WorldUtils;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.PriorityQueue;
 
 public class JourneyWorld implements DataStorable {
@@ -47,13 +49,23 @@ public class JourneyWorld implements DataStorable {
     }
 
     @Override
-    public void write(CompoundTag out) {
-
+    public void write(ByteBuf out) {
+        var nodes = ChunkMap.values().stream().toList();
+        out.writeInt(nodes.size());
+        for(int i = 0; i < nodes.size(); i++){
+            nodes.get(i).write(out);
+        }
     }
 
     @Override
-    public void read(CompoundTag in) {
-        ChunkMap = new HashMap<>();
+    public void read(ByteBuf in) {
+        int len = in.readInt();
+        ChunkMap = new HashMap<>(len);
+        for(int i = 0; i < len; i++){
+            var nn = new WorldChunk();
+            nn.read(in);
+            ChunkMap.put(new Vec2i(nn.chunkX, nn.chunkZ), nn);
+        }
     }
 
 

@@ -19,6 +19,5 @@ public class JourneyMapPlugin implements IClientPlugin {
 
     @Override
     public void onEvent(ClientEvent event) {
-
     }
 }
