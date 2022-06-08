@@ -20,7 +20,7 @@ public class QueryResultWidget extends WPlainPanel {
 
     public void configureWidget(QueryResult result, boolean isEven){
         this.result = result;
-        this.add(new WText(new TextComponent(result.name)), 0, 0, 160, 1);
+        this.add(new WText(new TextComponent("i didnt add this yet")), 0, 0, 160, 1);
         if(isEven) {
             painter = (matrices, left, top, panel) -> {
                 ScreenDrawing.coloredRect(matrices, left, top, panel.getWidth(), panel.getHeight(), Color.lightGray.getRGB());

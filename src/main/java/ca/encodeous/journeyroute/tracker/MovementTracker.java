@@ -16,7 +16,6 @@ import java.util.Date;
 import java.util.stream.Collectors;
 
 public class MovementTracker {
-    private static ArrayDeque<Vec3i> points = new ArrayDeque<>();
     public static void tick(TickEvent event){
         var curPos = Minecraft.getInstance().player.position();
         var world = Minecraft.getInstance().level;

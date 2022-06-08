@@ -4,17 +4,22 @@ import journeymap.client.api.display.Waypoint;
 import net.minecraft.core.Vec3i;
 
 public class QueryResult {
-    public String name;
-
     public Vec3i position;
-    public boolean isMapped;
+    public ResultType type;
+    public PointOfInterest poi;
 
-    public QueryResult(String name, Vec3i position, boolean isMapped, Waypoint assocWaypoint) {
-        this.name = name;
-        this.position = position;
-        this.isMapped = isMapped;
-        this.assocWaypoint = assocWaypoint;
+    public QueryResult(Vec3i pos) {
+        type = ResultType.COORDINATE;
+        position = pos;
+    }
+    public QueryResult(PointOfInterest poi) {
+        position = poi.pos;
+        this.poi = poi;
+        type = ResultType.POI;
     }
 
-    public Waypoint assocWaypoint;
+    public enum ResultType{
+        POI,
+        COORDINATE
+    }
 }

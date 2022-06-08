@@ -6,6 +6,7 @@ import ca.encodeous.journeyroute.world.WorldNode;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +34,16 @@ public class WorldUtils {
         }
 
         public int dist;
+    }
+    public static Vec3i getNearestMappedBlockVertical(JourneyWorld world, Vec3i pos) {
+        int y = pos.getY();
+        for(int i = 0; i < 319; i++){
+            var down = new Vec3i(pos.getX(), y - i, pos.getZ());
+            if(world.hasNode(down)) return down;
+            var up = new Vec3i(pos.getX(), y - i, pos.getZ());
+            if(world.hasNode(up)) return up;
+        }
+        return null;
     }
     private static final int[] mvarr = {0, 0, 1, -1}, mvarc = {1, -1, 0, 0};
     private static final int[]
