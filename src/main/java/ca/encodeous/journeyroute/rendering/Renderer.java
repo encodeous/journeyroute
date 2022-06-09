@@ -1,9 +1,13 @@
 package ca.encodeous.journeyroute.rendering;
 
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
+import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
@@ -11,12 +15,23 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.awt.*;
+import java.util.OptionalDouble;
 
 public class Renderer {
     private VertexConsumer consumer;
     private PoseStack matrices;
+    public static final RenderType.CompositeRenderType LINES = create("lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
+       .setShaderState(RENDERTYPE_LINES_SHADER)
+       .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+       .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+       .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+       .setOutputState(ITEM_ENTITY_TARGET)
+       .setWriteMaskState(COLOR_DEPTH_WRITE)
+       .setCullState(NO_CULL)
+       .createCompositeState(false));
 
     public Renderer(RenderBuffers buffer, PoseStack matrices) {
+        RenderSystem.lineWidth(30.0F);
         this.consumer = buffer.bufferSource().getBuffer(RenderType.LINES);
         this.matrices = matrices;
     }

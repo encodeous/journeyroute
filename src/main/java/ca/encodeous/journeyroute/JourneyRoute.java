@@ -101,11 +101,12 @@ public class JourneyRoute implements ModInitializer {
 	public static void tryRouteTo(Vec3i dest, Consumer<Boolean> onCompletion){
 		var thread = new Thread(()->{
 			try{
-				var route = INSTANCE.World.getRouteTo(Minecraft.getInstance().player.blockPosition(), dest);
+				var route = INSTANCE.World.getRouteTo(Minecraft.getInstance().player.blockPosition().below(), dest);
 				if(route == null || route.Path.isEmpty() || route.Path.size() == 1){
 					onCompletion.accept(false);
 				}else{
 					Route = route;
+					route.bakeRenderPath();
 					onCompletion.accept(true);
 				}
 			}
