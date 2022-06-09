@@ -2,7 +2,7 @@
 
 ## `What is JourneyRoute?`
 
-JourneyRoute is a path-finding mod for Minecraft. With JourneyRoute, you will never get lost down a mineshaft! As you travel in a world, it will build a network of all the places you have been, and is able to generate routes between locations. *The more you explore, the better the network will become, thus the paths that JourneyRoute will become better over time!*
+JourneyRoute is a path-finding mod for Minecraft. With JourneyRoute, you will never get lost down a mineshaft! As you travel in a world, it will build a network of all the places you have been, and is able to generate routes between locations. *The more you explore, the better the network will become, thus the paths that JourneyRoute generate improve over time!*
 
 ## `Usage`
 
