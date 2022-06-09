@@ -18,8 +18,13 @@ public class QueryResult {
         type = ResultType.POI;
     }
 
+    public QueryResult(ResultType result) {
+        type = result;
+    }
+
     public enum ResultType{
         POI,
-        COORDINATE
+        COORDINATE,
+        NO_RESULTS
     }
 }

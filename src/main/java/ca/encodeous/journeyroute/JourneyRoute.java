@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.invoke.MethodHandles;
+import java.util.function.Consumer;
 
 public class JourneyRoute implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
@@ -95,6 +96,24 @@ public class JourneyRoute implements ModInitializer {
 					return 1;
 				}));
 
+	}
+
+	public static void tryRouteTo(Vec3i dest, Consumer<Boolean> onCompletion){
+		var thread = new Thread(()->{
+			try{
+				var route = INSTANCE.World.getRouteTo(Minecraft.getInstance().player.blockPosition(), dest);
+				if(route == null || route.Path.isEmpty() || route.Path.size() == 1){
+					onCompletion.accept(false);
+				}else{
+					Route = route;
+					onCompletion.accept(true);
+				}
+			}
+			catch(Exception e){
+				System.out.println(e.getMessage());
+			}
+		});
+		thread.start();
 	}
 
 	private static String getMapFileName(ClientLevel level){

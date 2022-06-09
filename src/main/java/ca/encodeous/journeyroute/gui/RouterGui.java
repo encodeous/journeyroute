@@ -14,38 +14,24 @@ public class RouterGui extends LightweightGuiDescription {
     public RouterGui(){
         generateGui();
     }
-
-    private WPlainPanel advancedPanel, simplifiedPanel;
-    private boolean isAdvanced = false;
     private WPlainPanel root;
-    private final int grid = 18;
+    private final int grid = 15;
 
     private void generateGui(){
-        int width = 18 * 15;
-        int height = 13 * 15;
+        int width = 22 * grid;
+        int height = 16 * grid;
         root = new WPlainPanel();
         setRootPanel(root);
         root.setSize(width, height);
         root.setInsets(Insets.ROOT_PANEL);
 
-        var title = new WText(new TextComponent("JourneyRoute - Path Router").setStyle(Style.EMPTY.withBold(true)));
+        var title = new WText(new TextComponent("JourneyRoute").setStyle(Style.EMPTY.withBold(true)));
         title.setVerticalAlignment(VerticalAlignment.CENTER);
-        root.add(title, 0, 0, 10 * grid, grid);
+        root.add(title, 0, 0, 20 * grid, grid);
 
         // searcher
 
-        root.add(createSearcher(), 6, grid + 5, 10 * grid, 10 * grid);
-
-        // route
-
-        root.add(createRoutePlan(), 11 * grid, grid + 5, 8 * grid, 10 * grid);
-
-        // bottom actions
-
-        var generateRoute = new WButton(new TextComponent("Generate Route"));
-        root.add(generateRoute, 0, 12 * grid, 6 * grid, grid);
-        WButton button = new WButton(new TextComponent("Clear Route"));
-        root.add(button, 6 * grid, 12 * grid, 5 * grid, grid);
+        createSearcher();
         root.validate(this);
     }
     private boolean isEven = true;
@@ -60,7 +46,7 @@ public class RouterGui extends LightweightGuiDescription {
             y.configureWidget(x, isEven);
             isEven = !isEven;
         });
-        resultsList.setListItemHeight(2 * 15);
+        resultsList.setListItemHeight(2 * grid);
 
         searchBar.setChangedListener((s)->{
             resultsList.setData(QueryEngine.getResultsForQuery(s));
@@ -68,28 +54,14 @@ public class RouterGui extends LightweightGuiDescription {
 
         var label = new WText(new TextComponent("Search for Destinations"));
 
-        panel.add(label, 0, 0, 10 * grid, grid);
-        panel.add(searchBar, 0, 10, 10 * grid, grid);
-        panel.add(resultsList, 0, 2 * grid + 2, 10 * grid, 8 * grid);
-        return panel;
-    }
-
-    private WWidget createRoutePlan(){
-        var panel = new WPlainPanel();
-        var routeNodes = new SearchPanel(QueryEngine.getResultsForQuery(""), QueryResultWidget::new, (x, y)->{
-            y.configureWidget(x, isEven);
-            isEven = !isEven;
-        });
-        routeNodes.setListItemHeight(15);
-        var label = new WText(new TextComponent("Route Plan"));
-
-        var importBtn = new WButton(new TextComponent("Import"));
-        var saveBtn = new WButton(new TextComponent("Save"));
-        panel.add(importBtn, 0, 10, 3 * grid, grid);
-        panel.add(saveBtn, 3 * grid, 10, 3 * grid, grid);
-
-        panel.add(label, 0, 0, 7 * grid, grid);
-        panel.add(routeNodes, 0, 2 * grid + 2, 7 * grid + 7, 8 * grid);
+        panel.add(label, 0, 0, 20 * grid, grid);
+        panel.add(searchBar, 0, 10, 20 * grid, grid);
+        panel.add(resultsList, 0, 2 * grid + 2, 20 * grid, 11 * grid);
+        root.add(panel, 6, grid + 5, 20 * grid, 13 * grid);
+        searchBar.setHost(this);
+        panel.setHost(this);
+        searchBar.requestFocus();
+        panel.requestFocus();
         return panel;
     }
 }

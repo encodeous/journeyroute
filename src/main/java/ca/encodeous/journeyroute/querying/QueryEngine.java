@@ -75,6 +75,9 @@ public class QueryEngine {
                 results.add(new QueryResult(poi));
             }
         }
+        if(results.isEmpty()){
+            results.add(new QueryResult(QueryResult.ResultType.NO_RESULTS));
+        }
         return results;
     }
 }
