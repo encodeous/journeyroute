@@ -17,10 +17,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.awt.*;
 import java.util.OptionalDouble;
 
+import static net.minecraft.client.renderer.RenderStateShard.*;
+
 public class Renderer {
     private VertexConsumer consumer;
     private PoseStack matrices;
-    public static final RenderType.CompositeRenderType LINES = create("lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
+    public static final RenderType.CompositeRenderType LINES = RenderType.CompositeRenderType.create("lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
        .setShaderState(RENDERTYPE_LINES_SHADER)
        .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
