@@ -1,21 +1,16 @@
-package ca.encodeous.journeyroute.tracker;
+package ca.encodeous.journeyroute;
 
-import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.events.RenderEvent;
 import ca.encodeous.journeyroute.events.TickEvent;
 import ca.encodeous.journeyroute.utils.WorldUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.Shapes;
 
 import java.awt.*;
-import java.util.ArrayDeque;
 import java.util.Date;
-import java.util.stream.Collectors;
 
-public class MovementTracker {
+public class MinecraftHandler {
     public static void tick(TickEvent event){
         var curPos = Minecraft.getInstance().player.position();
         var world = Minecraft.getInstance().level;

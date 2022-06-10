@@ -123,29 +123,23 @@ public class WorldUtils {
         return visited.stream().toList();
     }
 
-    public static List<WorldNode> getSurroundingAir(JourneyWorld world, Vec3i originPos, int radius){
-        var visited = new HashSet<QueuedBlock>();
+    public static List<WorldNode> getSurroundingAir(JourneyWorld world, Vec3i originPos, boolean fallMode){
         if(originPos == null || !world.hasNode(originPos)) return Collections.emptyList();
-        var dq = new ArrayDeque<QueuedBlock>();
-        dq.add(new QueuedBlock(new BlockPos(originPos), 0));
-        while(!dq.isEmpty()){
-            var v = dq.poll();
-            if(v.pos == null) continue;
-            visited.add(v);
-            if(v.dist >= radius) continue;
-            for(int i = 0; i < 6; i++){
-                int nx = mvarr3[i] + v.pos.getX();
-                int ny = mvarc3[i] + v.pos.getY();
-                int nz = mvarz3[i] + v.pos.getZ();
-                var bpos = new BlockPos(nx, ny, nz);
-                if(!isWalkableThrough(world, bpos) || !world.hasNode(bpos)) continue;
-                var cblock = new QueuedBlock(bpos, v.dist + 1);
-                if(visited.contains(cblock)) continue;
-                visited.add(cblock);
-                dq.add(cblock);
+        var dq = new ArrayList<WorldNode>();
+        for(int i = 0; i < 6; i++){
+            int nx = mvarr3[i] + originPos.getX();
+            int ny = mvarc3[i] + originPos.getY();
+            if(fallMode){
+                if(mvarc3[i] != -1) continue;
+            }else{
+                if(mvarc3[i] == -1) continue;
             }
+            int nz = mvarz3[i] + originPos.getZ();
+            var bpos = new BlockPos(nx, ny, nz);
+            if(!isWalkableThrough(world, bpos) || !world.hasNode(bpos)) continue;
+            dq.add(world.getNode(bpos));
         }
-        return visited.stream().map(x->world.getNode(x.pos)).toList();
+        return dq;
     }
 
     public static BlockPos getSurfaceLevelBlock(Level world, Vec3i pos){

@@ -1,5 +1,5 @@
 package ca.encodeous.journeyroute;
 
 public class Config {
-    public static final double AIR_WEIGHT = 2;
+    public static final double AIR_WEIGHT = 200;
 }

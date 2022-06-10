@@ -2,33 +2,25 @@ package ca.encodeous.journeyroute;
 
 import ca.encodeous.journeyroute.gui.RouterGui;
 import ca.encodeous.journeyroute.gui.RouterScreen;
-import ca.encodeous.journeyroute.tracker.MovementTracker;
 import ca.encodeous.journeyroute.utils.WorldUtils;
 import ca.encodeous.journeyroute.world.Route;
 import ca.encodeous.journeyroute.world.JourneyWorld;
-import ca.weblite.objc.Client;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.netty.buffer.*;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.renderer.v1.RendererAccess;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.core.Vec3i;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.lang.invoke.MethodHandles;
 import java.util.function.Consumer;
 
 public class JourneyRoute implements ModInitializer {
@@ -171,6 +163,7 @@ public class JourneyRoute implements ModInitializer {
 	}
 
 	public static void startMappingFor(ClientLevel level) {
+		Route = null;
 		var dir = new File(Minecraft.getInstance().gameDirectory, "journeyroute");
 		if(dir.exists() && !dir.isDirectory()){
 			throw new RuntimeException("Unable to create journeyroute folder in the minecraft directory. Please delete any files named \"journeyroute\" at " + dir.getAbsolutePath());

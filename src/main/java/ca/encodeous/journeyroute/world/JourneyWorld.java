@@ -97,7 +97,18 @@ public class JourneyWorld implements DataStorable {
                 }
             }
 
-            for(var block : WorldUtils.getSurroundingAir(this, v.pos, 1)){
+            for(var block : WorldUtils.getSurroundingAir(this, v.pos, true)){
+                double heurWeight = cur.distSqr(dest);
+                var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
+                double newWeight = w + Math.sqrt(v.pos.distSqr(nPos)) + block.weighting + Config.AIR_WEIGHT;
+                if(newWeight < dist.getOrDefault(nPos, 1e17)){
+                    dist.put(nPos, newWeight);
+                    prev.put(nPos, v.pos);
+                    nodes.add(new RouteNode(heurWeight + newWeight, newWeight, block));
+                }
+            }
+
+            for(var block : WorldUtils.getSurroundingAir(this, v.pos, false)){
                 double heurWeight = cur.distSqr(dest) + Config.AIR_WEIGHT;
                 var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
                 double newWeight = w + Math.sqrt(v.pos.distSqr(nPos)) + block.weighting + Config.AIR_WEIGHT;
