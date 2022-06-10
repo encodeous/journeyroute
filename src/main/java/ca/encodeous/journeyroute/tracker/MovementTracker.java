@@ -59,11 +59,12 @@ public class MovementTracker {
                 var camPos = Minecraft.getInstance().cameraEntity.position();
                 var itr = JourneyRoute.Route.BakedRenderPath.iterator();
                 Vec3 prev = null;
-                var lnColor = Color.YELLOW;
-                var lnColor2 = Color.BLACK;
+                var lnColor = Color.WHITE;
+                var lnColor2 = new Color(9, 173, 199);
                 double dist = 0;
                 boolean draw = true;
                 int segCount = 0;
+                boolean hasReachedPlayer = true;
                 while(itr.hasNext()){
                     if(prev == null){
                         prev = itr.next();
@@ -72,6 +73,9 @@ public class MovementTracker {
                         var citr = itr.next();
                         Vec3 cur = citr;
                         dist += cur.distanceTo(prev);
+                        if(cur.distanceTo(camPos) <= 3){
+                            hasReachedPlayer = false;
+                        }
                         if(dist >= 0.2){
                             dist = 0;
                             draw = !draw;
@@ -79,7 +83,7 @@ public class MovementTracker {
                         if(draw){
                             segCount++;
                             if(cur.distanceTo(camPos) <= Minecraft.getInstance().levelRenderer.getLastViewDistance() * 16){
-                                renderer.drawLine(prev, cur, segCount % 2 == 0 ? lnColor : lnColor2);
+                                renderer.drawLine(prev, cur, (segCount % 2 == 0 || hasReachedPlayer) ? lnColor : lnColor2);
                             }
                         }
                         prev = cur;

@@ -24,7 +24,7 @@ public class Renderer {
     private PoseStack matrices;
     public static final RenderType.CompositeRenderType LINES = RenderType.CompositeRenderType.create("lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
        .setShaderState(RENDERTYPE_LINES_SHADER)
-       .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.empty()))
+       .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(3)))
        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
        .setOutputState(ITEM_ENTITY_TARGET)
@@ -33,8 +33,7 @@ public class Renderer {
        .createCompositeState(false));
 
     public Renderer(RenderBuffers buffer, PoseStack matrices) {
-        RenderSystem.lineWidth(30.0F);
-        this.consumer = buffer.bufferSource().getBuffer(RenderType.LINES);
+        this.consumer = buffer.bufferSource().getBuffer(LINES);
         this.matrices = matrices;
     }
 

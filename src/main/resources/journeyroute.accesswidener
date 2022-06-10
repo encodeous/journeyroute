@@ -4,8 +4,17 @@ accessible  class   net/minecraft/client/renderer/RenderType
 accessible  class   net/minecraft/client/renderer/RenderType$CompositeState
 accessible  class   net/minecraft/client/renderer/RenderStateShard$LineStateShard
 accessible  field   net/minecraft/client/renderer/RenderStateShard RENDERTYPE_LINES_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard BLOCK_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard NO_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard RENDERTYPE_BEACON_BEAM_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard RENDERTYPE_LEASH_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard RENDERTYPE_OUTLINE_SHADER Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
 accessible  field   net/minecraft/client/renderer/RenderStateShard VIEW_OFFSET_Z_LAYERING Lnet/minecraft/client/renderer/RenderStateShard$LayeringStateShard;
 accessible  field   net/minecraft/client/renderer/RenderStateShard TRANSLUCENT_TRANSPARENCY Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard NO_TRANSPARENCY Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard ADDITIVE_TRANSPARENCY Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard LIGHTNING_TRANSPARENCY Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
+accessible  field   net/minecraft/client/renderer/RenderStateShard GLINT_TRANSPARENCY Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
 accessible  field   net/minecraft/client/renderer/RenderStateShard ITEM_ENTITY_TARGET Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;
 accessible  field   net/minecraft/client/renderer/RenderStateShard MAIN_TARGET Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;
 accessible  field   net/minecraft/client/renderer/RenderStateShard OUTLINE_TARGET Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;

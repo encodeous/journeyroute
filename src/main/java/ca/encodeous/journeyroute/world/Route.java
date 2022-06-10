@@ -1,17 +1,32 @@
 package ca.encodeous.journeyroute.world;
 
+import ca.encodeous.journeyroute.rendering.Renderer;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 
 import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
+
+import static net.minecraft.client.renderer.RenderStateShard.*;
+import static net.minecraft.client.renderer.RenderStateShard.CULL;
 
 public class Route {
     public ArrayDeque<Vec3i> Path = new ArrayDeque<>();
     public ArrayDeque<Vec3> BakedRenderPath = null;
     public void bakeRenderPath(){
+//        Renderer.LINES = RenderType.LINES;
+//        Renderer.LINES = RenderType.CompositeRenderType.create("jr-shader",
+//                DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 256, RenderType.CompositeState.builder()
+//                .setShaderState(NO_SHADER)
+//                .setCullState(NO_CULL)
+//                .createCompositeState(false));
         if(Path.size() >= 2){
             BakedRenderPath = Path.stream().map((citr)->new Vec3(citr.getX() + 0.5, citr.getY() + 2.0, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
             BakedRenderPath = rdpSimplification(1, BakedRenderPath);
