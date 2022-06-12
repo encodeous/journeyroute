@@ -1,5 +1,6 @@
 package ca.encodeous.journeyroute;
 
+import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
 import ca.encodeous.journeyroute.gui.RouterGui;
 import ca.encodeous.journeyroute.gui.RouterScreen;
 import ca.encodeous.journeyroute.utils.WorldUtils;
@@ -7,6 +8,10 @@ import ca.encodeous.journeyroute.world.Route;
 import ca.encodeous.journeyroute.world.JourneyWorld;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.netty.buffer.*;
+import journeymap.client.api.display.Displayable;
+import journeymap.client.api.display.PolygonOverlay;
+import journeymap.client.api.model.MapPolygon;
+import journeymap.client.api.model.ShapeProperties;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -14,13 +19,18 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.level.Level;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class JourneyRoute implements ModInitializer {
@@ -30,6 +40,7 @@ public class JourneyRoute implements ModInitializer {
 	public static final String MODID = "journeyroute";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 	public static JourneyRoute INSTANCE;
+	private static PolygonOverlay overlay = null;
 	public JourneyWorld World;
 	private File openWorldFile;
 	public static Vec3i RouteDest;
@@ -52,7 +63,6 @@ public class JourneyRoute implements ModInitializer {
 				GLFW.GLFW_KEY_R, // The keycode of the key
 				"JourneyRoute" // The translation key of the keybinding's category.
 		));
-//		RendererAccess.INSTANCE.getRenderer().meshBuilder().getEmitter().
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickCount++;
 			if(tickCount % tickSaveInterval == 0){
@@ -70,23 +80,7 @@ public class JourneyRoute implements ModInitializer {
 			}
 		});
 
-
-
-		LOGGER.info("Hello Fabric world!");
-		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("waypoint")
-				.executes(source -> {
-					RouteDest = WorldUtils.getSurfaceLevelBlock(source.getSource().getWorld(), source.getSource().getEntity().blockPosition());
-					if(RouteDest == null){
-						RouteDest = source.getSource().getEntity().blockPosition();
-					}
-					return 1;
-				}));
-		ClientCommandManager.DISPATCHER.register(ClientCommandManager.literal("route")
-				.executes(source -> {
-					if(RouteDest == null) return 0;
-					Route = World.getRouteTo(source.getSource().getEntity().blockPosition(), RouteDest);
-					return 1;
-				}));
+		LOGGER.info("Hello from JourneyRoute o/");
 
 	}
 
@@ -99,6 +93,20 @@ public class JourneyRoute implements ModInitializer {
 				}else{
 					Route = route;
 					route.bakeRenderPath();
+					// update JourneyMap polygon
+					if(overlay != null){
+						JourneyMapPlugin.CLIENT.remove(overlay);
+					}
+					ResourceKey<Level> level = Minecraft.getInstance().level.dimension();
+					var properties = new ShapeProperties()
+							.setFillColor(Color.WHITE.getRGB())
+							.setStrokeWidth(0);
+					var pt = new ArrayList<BlockPos>();
+					for(var v : route.BakedJourneyMapPolygon){
+						pt.add(new BlockPos(v));
+					}
+					overlay = new PolygonOverlay(MODID, "jr-wp-" + route.hashCode(), level, properties, new MapPolygon(pt));
+					JourneyMapPlugin.CLIENT.show(overlay);
 					onCompletion.accept(true);
 				}
 			}
@@ -122,7 +130,7 @@ public class JourneyRoute implements ModInitializer {
 
 	private void saveMapping() {
 		if(prevLevel == null) return;
-		LOGGER.info("Saving journeymap world to " + openWorldFile.getAbsolutePath());
+		LOGGER.info("Saving journeyroute world to " + openWorldFile.getAbsolutePath());
 		var buf = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT, 0, Integer.MAX_VALUE);
 		World.write(buf);
 		try {
@@ -164,6 +172,9 @@ public class JourneyRoute implements ModInitializer {
 
 	public static void startMappingFor(ClientLevel level) {
 		Route = null;
+		if(overlay != null){
+			JourneyMapPlugin.CLIENT.remove(overlay);
+		}
 		var dir = new File(Minecraft.getInstance().gameDirectory, "journeyroute");
 		if(dir.exists() && !dir.isDirectory()){
 			throw new RuntimeException("Unable to create journeyroute folder in the minecraft directory. Please delete any files named \"journeyroute\" at " + dir.getAbsolutePath());

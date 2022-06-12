@@ -1,25 +1,17 @@
 package ca.encodeous.journeyroute.world;
 
-import ca.encodeous.journeyroute.rendering.Renderer;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.RenderStateShard;
-import net.minecraft.client.renderer.RenderType;
+import ca.encodeous.journeyroute.rendering.PolylineComposer;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 
-import java.awt.*;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.OptionalDouble;
 import java.util.stream.Collectors;
-
-import static net.minecraft.client.renderer.RenderStateShard.*;
-import static net.minecraft.client.renderer.RenderStateShard.CULL;
 
 public class Route {
     public ArrayDeque<Vec3i> Path = new ArrayDeque<>();
     public ArrayDeque<Vec3> BakedRenderPath = null;
+    private ArrayDeque<Vec3> BakedJourneyMapPolyline = null;
+    public ArrayDeque<Vec3> BakedJourneyMapPolygon = null;
     public void bakeRenderPath(){
 //        Renderer.LINES = RenderType.LINES;
 //        Renderer.LINES = RenderType.CompositeRenderType.create("jr-shader",
@@ -30,8 +22,44 @@ public class Route {
         if(Path.size() >= 2){
             BakedRenderPath = Path.stream().map((citr)->new Vec3(citr.getX() + 0.5, citr.getY() + 2.0, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
             BakedRenderPath = rdpSimplification(1, BakedRenderPath);
+            BakedJourneyMapPolyline = new ArrayDeque<>(BakedRenderPath);
+            BakedJourneyMapPolyline = rdpSimplification(3, BakedJourneyMapPolyline);
+            buildPolygonFromLine(2);
             for(int i = 0; i < 3; i++){
                 BakedRenderPath = chaikinIter(0.25, BakedRenderPath);
+            }
+        }
+    }
+    public void buildPolygonFromLine(float width){
+        BakedJourneyMapPolygon = new ArrayDeque<>();
+        {
+            var itr = BakedJourneyMapPolyline.descendingIterator();
+            Vec3 prev = null;
+            while(itr.hasNext()){
+                if(prev == null){
+                    prev = itr.next();
+                }
+                else{
+                    var cur = itr.next();
+                    BakedJourneyMapPolygon.add(prev.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
+                    BakedJourneyMapPolygon.add(cur.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
+                    prev = cur;
+                }
+            }
+        }
+        {
+            var itr = BakedJourneyMapPolyline.iterator();
+            Vec3 prev = null;
+            while(itr.hasNext()){
+                if(prev == null){
+                    prev = itr.next();
+                }
+                else{
+                    var cur = itr.next();
+                    BakedJourneyMapPolygon.add(prev.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
+                    BakedJourneyMapPolygon.add(cur.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
+                    prev = cur;
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.querying.QueryEngine;
 import journeymap.client.api.IClientAPI;
 import journeymap.client.api.IClientPlugin;
+import journeymap.client.api.display.PolygonOverlay;
 import journeymap.client.api.event.ClientEvent;
 
 import java.util.EnumSet;
