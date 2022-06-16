@@ -143,18 +143,14 @@ public class Route {
         var a1 = rdpSimplification(epsilon, arr1);
         a1.removeLast();
         var a2 = rdpSimplification(epsilon, arr2);
-        for(var k : a1){
-            ans.add(k);
-        }
-        for(var k : a2){
-            ans.add(k);
-        }
+        ans.addAll(a1);
+        ans.addAll(a2);
         return ans;
     }
 
     /**
      * An implementation of the chaikin polyline smoothing algorithm for a single iteration
-     * @param subdivideAmount the distance from each point on the polyline to subdevide
+     * @param subdivideAmount the distance from each point on the polyline to subdivide
      * @param input a polyline
      * @return the smoothened polyline
      */
