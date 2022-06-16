@@ -2,17 +2,13 @@ package ca.encodeous.journeyroute.querying;
 
 import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
-import ca.encodeous.journeyroute.utils.TextUtils;
 import ca.encodeous.journeyroute.utils.WorldUtils;
-import ca.encodeous.journeyroute.world.JourneyWorld;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Vec3i;
 import oshi.util.tuples.Pair;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class QueryEngine {
     private static final Pattern coordMatch = Pattern.compile("[xX\\s,.=:]*(-?\\d+)[yYzZ\\s,.=:]+(-?\\d+)[zZ\\s,.=:]*(-?\\d+)?");
@@ -20,7 +16,7 @@ public class QueryEngine {
     public static void updateWaypoints(){
         waypoints.clear();
         for(var wp : JourneyMapPlugin.CLIENT.getAllWaypoints()){
-            var mapped = WorldUtils.getNearestMappedBlockVertical(JourneyRoute.INSTANCE.World, wp.getPosition());
+            var mapped = WorldUtils.getNearestMappedBlockVertical(JourneyRoute.INSTANCE.world, wp.getPosition());
             if(mapped != null){
                 waypoints.add(new PointOfInterest(wp, mapped));
             }

@@ -1,27 +1,28 @@
 package ca.encodeous.journeyroute.rendering;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.LevelRenderer;
 import net.minecraft.client.renderer.RenderBuffers;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.Mth;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.awt.*;
 import java.util.OptionalDouble;
 
 import static net.minecraft.client.renderer.RenderStateShard.*;
 
+/**
+ * Custom minecraft render hook
+ */
 public class Renderer {
     private VertexConsumer consumer;
     private PoseStack matrices;
+    /**
+     * A custom line renderer for journeyroute lines
+     */
     public static final RenderType.CompositeRenderType LINES = RenderType.CompositeRenderType.create("lines", DefaultVertexFormat.POSITION_COLOR_NORMAL, VertexFormat.Mode.LINES, 256, RenderType.CompositeState.builder()
        .setShaderState(RENDERTYPE_LINES_SHADER)
        .setLineState(new RenderStateShard.LineStateShard(OptionalDouble.of(3)))
@@ -37,6 +38,12 @@ public class Renderer {
         this.matrices = matrices;
     }
 
+    /**
+     * Draws a line
+     * @param p1 endpoint 1
+     * @param p2 endpoint 2
+     * @param color the color of the line
+     */
     public void drawLine(Vec3 p1, Vec3 p2, Color color){
         drawLine(p1.x, p1.y, p1.z, p2.x, p2.y, p2.z, color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
     }
@@ -45,34 +52,5 @@ public class Renderer {
         var entry = matrices.last();
         consumer.vertex(entry.pose(), (float) x1, (float) y1, (float) z1).color(r, g, b, a).normal(entry.normal(), r, g, b).endVertex();
         consumer.vertex(entry.pose(), (float) x2, (float) y2, (float) z2).color(r, g, b, a).normal(entry.normal(), r, g, b).endVertex();
-    }
-
-    public void drawShapeOutline(VoxelShape shape, Vec3 pos, Color color, float scale){
-        drawShapeOutline(shape, pos.x, pos.y, pos.z, color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f, scale);
-    }
-
-    public void drawShapeOutline(VoxelShape voxelShape, double x, double y, double z, float red, float green, float blue, float alpha, float scale) {
-        matrices.pushPose();
-        var entry = matrices.last();
-        voxelShape.forAllEdges((k, l, m, n, o, p) -> {
-            float q = (float)(n * scale - k * scale);
-            float r = (float)(o * scale - l * scale);
-            float s = (float)(p * scale - m * scale);
-            float t = Mth.sqrt(q * q + r * r + s * s);
-            q /= t;
-            r /= t;
-            s /= t;
-            consumer.vertex(entry.pose(), (float)(k * scale + x), (float)(l * scale + y), (float)(m * scale + z)).color(red, green, blue, alpha).normal(entry.normal(), q, r, s).endVertex();
-            consumer.vertex(entry.pose(), (float)(n * scale + x), (float)(o * scale + y), (float)(p * scale + z)).color(red, green, blue, alpha).normal(entry.normal(), q, r, s).endVertex();
-        });
-        matrices.popPose();
-    }
-
-    public void drawBox(AABB box, Color color){
-        drawBox(box, color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
-    }
-
-    public void drawBox(AABB box, float red, float green, float blue, float alpha){
-        LevelRenderer.renderLineBox(matrices, consumer, box, red, green, blue, alpha);
     }
 }

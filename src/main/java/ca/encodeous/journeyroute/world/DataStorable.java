@@ -7,7 +7,10 @@ import net.minecraft.network.chat.NbtComponent;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 
+/**
+ * An interface that enforces an object to be able to be written or read to/from a file
+ */
 public interface DataStorable {
-    public void write(ByteBuf out);
-    public void read(ByteBuf in);
+    void write(ByteBuf out);
+    void read(ByteBuf in);
 }

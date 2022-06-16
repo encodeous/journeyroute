@@ -8,11 +8,26 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+/**
+ * A node that represents a single block on the JourneyRoute world
+ */
 public class WorldNode implements DataStorable {
+    /**
+     * The weight of the current block, the lower the more likely it is chosen
+     */
     public double weighting;
+    /**
+     * The last time the player has visited this block
+     */
     public long lastVisit;
 
+    /**
+     * Determines whether the block is air
+     */
     public boolean isAir;
+    /**
+     * Stores any potential metadata contained in the block
+     */
     public String metadata = "";
 
     public WorldNode(int worldX, int worldY, int worldZ, boolean isAir) {

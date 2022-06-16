@@ -2,6 +2,9 @@ package ca.encodeous.journeyroute.world;
 
 import java.util.Objects;
 
+/**
+ * A class that represents a 2d coordinate
+ */
 public class Vec2i {
     public Vec2i(int x, int z) {
         this.x = x;

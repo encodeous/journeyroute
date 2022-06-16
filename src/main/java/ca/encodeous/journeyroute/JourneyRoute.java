@@ -3,17 +3,14 @@ package ca.encodeous.journeyroute;
 import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
 import ca.encodeous.journeyroute.gui.RouterGui;
 import ca.encodeous.journeyroute.gui.RouterScreen;
-import ca.encodeous.journeyroute.utils.WorldUtils;
 import ca.encodeous.journeyroute.world.Route;
 import ca.encodeous.journeyroute.world.JourneyWorld;
 import com.mojang.blaze3d.platform.InputConstants;
 import io.netty.buffer.*;
-import journeymap.client.api.display.Displayable;
 import journeymap.client.api.display.PolygonOverlay;
 import journeymap.client.api.model.MapPolygon;
 import journeymap.client.api.model.ShapeProperties;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
@@ -33,23 +30,28 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
+/**
+ * The main plugin class
+ */
 public class JourneyRoute implements ModInitializer {
-	// This logger is used to write text to the console and the log file.
-	// It is considered best practice to use your mod id as the logger's name.
-	// That way, it's clear which mod wrote info, warnings, and errors.
+	// constants
+	private static final int TICK_SAVE_INTERVAL = 20 * 60 * 5; // 5 min
 	public static final String MODID = "journeyroute";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MODID);
+	// static fields
 	public static JourneyRoute INSTANCE;
 	private static PolygonOverlay overlay = null;
-	public JourneyWorld World;
-	private File openWorldFile;
-	public static Vec3i RouteDest;
-	public static Route Route;
 	private static KeyMapping guiBinding;
+	public static Route route;
 	private static ClientLevel prevLevel = null;
 	private static int tickCount = 0;
-	private static final int tickSaveInterval = 20 * 60 * 5; // 5 min
+	// instance fields
+	public JourneyWorld world;
+	private File openWorldFile;
 
+	/**
+	 * Called when the mod is initialized
+	 */
 	@Override
 	public void onInitialize() {
 		INSTANCE = this;
@@ -57,15 +59,17 @@ public class JourneyRoute implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
+		// register the keybinding in the minecraft key shortcuts
 		guiBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 				"Open Router", // The translation key of the keybinding's name
 				InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
 				GLFW.GLFW_KEY_R, // The keycode of the key
 				"JourneyRoute" // The translation key of the keybinding's category.
 		));
+		// save the journeyroute world every TICK_SAVE_INTERVAL
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickCount++;
-			if(tickCount % tickSaveInterval == 0){
+			if(tickCount % TICK_SAVE_INTERVAL == 0){
 				LOGGER.info("Autosaving JourneyRoute storage");
 				saveMapping();
 			}
@@ -84,14 +88,21 @@ public class JourneyRoute implements ModInitializer {
 
 	}
 
+	/**
+	 * Generates & displays a route to a destination.
+	 * @param dest the destination
+	 * @param onCompletion code that is executed on the completion of the pathfinding
+	 */
 	public static void tryRouteTo(Vec3i dest, Consumer<Boolean> onCompletion){
 		var thread = new Thread(()->{
 			try{
-				var route = INSTANCE.World.getRouteTo(Minecraft.getInstance().player.blockPosition().below(), dest);
+				// generates the route using A*
+				var route = INSTANCE.world.getRouteTo(Minecraft.getInstance().player.blockPosition().below(), dest);
+				// check if the route is successfully generated
 				if(route == null || route.Path.isEmpty() || route.Path.size() == 1){
 					onCompletion.accept(false);
 				}else{
-					Route = route;
+					JourneyRoute.route = route;
 					route.bakeRenderPath();
 					// update JourneyMap polygon
 					if(overlay != null){
@@ -106,6 +117,7 @@ public class JourneyRoute implements ModInitializer {
 						pt.add(new BlockPos(v));
 					}
 					overlay = new PolygonOverlay(MODID, "jr-wp-" + route.hashCode(), level, properties, new MapPolygon(pt));
+					// draw the polygon onto the map
 					JourneyMapPlugin.CLIENT.show(overlay);
 					onCompletion.accept(true);
 				}
@@ -117,6 +129,11 @@ public class JourneyRoute implements ModInitializer {
 		thread.start();
 	}
 
+	/**
+	 * Gets the formatted journeyroute world filename for a level
+	 * @param level the level
+	 * @return a formatted file name for a level
+	 */
 	private static String getMapFileName(ClientLevel level){
 		var sid = "";
 		if(Minecraft.getInstance().getCurrentServer() != null){
@@ -128,11 +145,14 @@ public class JourneyRoute implements ModInitializer {
 		return "jr-" + cs + "-" + level.dimension().location().getPath() + ".jrw";
 	}
 
+	/**
+	 * Saves the current journeyroute world onto disk
+	 */
 	private void saveMapping() {
 		if(prevLevel == null) return;
 		LOGGER.info("Saving journeyroute world to " + openWorldFile.getAbsolutePath());
 		var buf = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT, 0, Integer.MAX_VALUE);
-		World.write(buf);
+		world.write(buf);
 		try {
 			var fo = new FileOutputStream(openWorldFile);
 			fo.write(buf.array(), buf.arrayOffset(), buf.readableBytes());
@@ -142,6 +162,10 @@ public class JourneyRoute implements ModInitializer {
 		}
 	}
 
+	/**
+	 * Loads a saved version of the current world from disk
+	 * @param mappingFolder the folder where worlds are stored
+	 */
 	private void loadMapping(File mappingFolder) {
 		if(prevLevel == null) return;
 		var name = getMapFileName(prevLevel);
@@ -154,7 +178,7 @@ public class JourneyRoute implements ModInitializer {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			World = new JourneyWorld();
+			world = new JourneyWorld();
 			return;
 		}
 		LOGGER.info("Loading " + name);
@@ -166,12 +190,16 @@ public class JourneyRoute implements ModInitializer {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		World = new JourneyWorld();
-		World.read(buf);
+		world = new JourneyWorld();
+		world.read(buf);
 	}
 
+	/**
+	 * Switches the internal datastructures & prepares journeymap for a new world
+	 * @param level the new world
+	 */
 	public static void startMappingFor(ClientLevel level) {
-		Route = null;
+		route = null;
 		if(overlay != null){
 			JourneyMapPlugin.CLIENT.remove(overlay);
 		}

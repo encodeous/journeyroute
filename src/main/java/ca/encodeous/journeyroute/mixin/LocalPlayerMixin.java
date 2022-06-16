@@ -1,6 +1,5 @@
 package ca.encodeous.journeyroute.mixin;
 
-import ca.encodeous.journeyroute.events.TickEvent;
 import ca.encodeous.journeyroute.MinecraftHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -17,7 +16,7 @@ public class LocalPlayerMixin {
         var p = Minecraft.getInstance().player;
         var blockPos = p.blockPosition();
         if (Minecraft.getInstance().level.getChunkSource().hasChunk(SectionPos.blockToSectionCoord(blockPos.getX()), SectionPos.blockToSectionCoord(blockPos.getZ()))) {
-            MinecraftHandler.tick(new TickEvent());
+            MinecraftHandler.tick();
         }
     }
 }

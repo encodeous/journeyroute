@@ -7,8 +7,17 @@ import net.minecraft.nbt.CompoundTag;
 import java.util.HashMap;
 import java.util.Objects;
 
+/**
+ * A class that represents a 16x16x(world height) section of a world.
+ */
 public class WorldChunk implements DataStorable {
+    /**
+     * The chunk coordinate
+     */
     public int chunkX, chunkZ;
+    /**
+     * A map containing all of the blocks in the chunk
+     */
     public HashMap<Vec3i, WorldNode> NodeMap;
     public WorldChunk(int x, int z){
         chunkX = x;

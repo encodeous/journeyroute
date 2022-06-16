@@ -1,24 +1,27 @@
 package ca.encodeous.journeyroute.world;
 
-import ca.encodeous.journeyroute.rendering.PolylineComposer;
 import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.stream.Collectors;
 
+/**
+ * A class that represents a whole path.
+ */
 public class Route {
     public ArrayDeque<Vec3i> Path = new ArrayDeque<>();
     public ArrayDeque<Vec3> BakedRenderPath = null;
     private ArrayDeque<Vec3> BakedJourneyMapPolyline = null;
     public ArrayDeque<Vec3> BakedJourneyMapPolygon = null;
+
+    /**
+     * Called when a route is fully generated.
+     * This ensures the path is ready to be performantly rendered and displayed in-game
+     */
     public void bakeRenderPath(){
-//        Renderer.LINES = RenderType.LINES;
-//        Renderer.LINES = RenderType.CompositeRenderType.create("jr-shader",
-//                DefaultVertexFormat.POSITION_COLOR, VertexFormat.Mode.TRIANGLE_STRIP, 256, RenderType.CompositeState.builder()
-//                .setShaderState(NO_SHADER)
-//                .setCullState(NO_CULL)
-//                .createCompositeState(false));
+        // check if the path is actually a valid path
         if(Path.size() >= 2){
             BakedRenderPath = Path.stream().map((citr)->new Vec3(citr.getX() + 0.5, citr.getY() + 2.0, citr.getZ() + 0.5)).collect(Collectors.toCollection(ArrayDeque::new));
             BakedRenderPath = rdpSimplification(1, BakedRenderPath);
@@ -30,39 +33,59 @@ public class Route {
             }
         }
     }
+
+    /**
+     * Builds a polygon from a polyline with a given width
+     * Constructs the polygon in CCW
+     * @param width the width of the line
+     */
     public void buildPolygonFromLine(float width){
         BakedJourneyMapPolygon = new ArrayDeque<>();
-        {
-            var itr = BakedJourneyMapPolyline.descendingIterator();
-            Vec3 prev = null;
-            while(itr.hasNext()){
-                if(prev == null){
-                    prev = itr.next();
-                }
-                else{
-                    var cur = itr.next();
-                    BakedJourneyMapPolygon.add(prev.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
-                    BakedJourneyMapPolygon.add(cur.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
-                    prev = cur;
-                }
+        var ditr = BakedJourneyMapPolyline.descendingIterator();
+        buildPolyline(width, ditr);
+        var itr = BakedJourneyMapPolyline.iterator();
+        buildPolyline(width, itr);
+    }
+
+    /**
+     * Finds a perpendicular line to a 3d line that is on the same x-z plane.
+     * @param a the first point
+     * @param b the second point
+     * @param mag the length of the vector
+     * @return a vector that is perpendicular
+     */
+    private static Vec3 getNormalVectorPlane(Vec3 a, Vec3 b, float mag){
+        var vec = a.subtract(b);
+        return new Vec3(vec.z, 0, -vec.x).normalize().scale(mag);
+    }
+
+    /**
+     * Generates a uni-directional polyline that is offset by width that is normal to each individual segment of the line.
+     * @param width offset in the direction normal to each line segment
+     * @param itr the source of the polyline points
+     */
+    private void buildPolyline(float width, Iterator<Vec3> itr) {
+        Vec3 prev = null;
+        while(itr.hasNext()){
+            if(prev == null){
+                prev = itr.next();
             }
-        }
-        {
-            var itr = BakedJourneyMapPolyline.iterator();
-            Vec3 prev = null;
-            while(itr.hasNext()){
-                if(prev == null){
-                    prev = itr.next();
-                }
-                else{
-                    var cur = itr.next();
-                    BakedJourneyMapPolygon.add(prev.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
-                    BakedJourneyMapPolygon.add(cur.add(PolylineComposer.getNormalVectorPlane(prev, cur, width)));
-                    prev = cur;
-                }
+            else{
+                var cur = itr.next();
+                BakedJourneyMapPolygon.add(prev.add(getNormalVectorPlane(prev, cur, width)));
+                BakedJourneyMapPolygon.add(cur.add(getNormalVectorPlane(prev, cur, width)));
+                prev = cur;
             }
         }
     }
+
+    /**
+     * Gets the distance between a 3d line segment and a point
+     * @param ep1 the first endpoint
+     * @param ep2 the second endpoint
+     * @param pt the point
+     * @return the minimum distance from the point to the line segment
+     */
     public static double getDist(Vec3 ep1, Vec3 ep2, Vec3 pt){
         // https://mathworld.wolfram.com/Point-LineDistance3-Dimensional.html
         var d1 = pt.subtract(ep1);
@@ -70,6 +93,13 @@ public class Route {
         var d3 = ep2.subtract(ep1);
         return (d1.cross(d2).length()) / d3.length();
     }
+
+    /**
+     * Implements the Ramer-Douglas-Peucker polyline simplification algorithm
+     * @param epsilon the distance within which a bend is considered a straight line
+     * @param input a polyline
+     * @return the simplified polyline
+     */
     public static ArrayDeque<Vec3> rdpSimplification(double epsilon, ArrayDeque<Vec3> input){
         if(input.size() <= 1) return input;
         var p1 = input.getFirst();
@@ -122,6 +152,12 @@ public class Route {
         return ans;
     }
 
+    /**
+     * An implementation of the chaikin polyline smoothing algorithm for a single iteration
+     * @param subdivideAmount the distance from each point on the polyline to subdevide
+     * @param input a polyline
+     * @return the smoothened polyline
+     */
     public static ArrayDeque<Vec3> chaikinIter(double subdivideAmount, ArrayDeque<Vec3> input){
         var output = new ArrayDeque<Vec3>();
         var itr = input.iterator();
