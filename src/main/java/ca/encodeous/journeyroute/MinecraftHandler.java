@@ -59,7 +59,7 @@ public class MinecraftHandler {
                 boolean draw = true;
                 int segCount = 0;
                 // shows the player the right way to travel
-                boolean hasReachedPlayer = true;
+                boolean desaturateLine = true;
                 while(itr.hasNext()){
                     if(prev == null){
                         prev = itr.next();
@@ -68,8 +68,8 @@ public class MinecraftHandler {
                         var citr = itr.next();
                         Vec3 cur = citr;
                         dist += cur.distanceTo(prev);
-                        if(cur.distanceTo(camPos) <= 3){
-                            hasReachedPlayer = false;
+                        if(JourneyRoute.route.wasLoadedFromFile || cur.distanceTo(camPos) <= 3){
+                            desaturateLine = false;
                         }
                         // responsible for the dashed lines effect
                         if(dist >= 0.2){
@@ -80,7 +80,7 @@ public class MinecraftHandler {
                             segCount++;
                             // render lines only within render distance
                             if(cur.distanceTo(camPos) <= Minecraft.getInstance().levelRenderer.getLastViewDistance() * 16){
-                                renderer.drawLine(prev, cur, (segCount % 2 == 0 || hasReachedPlayer) ? lnColor : lnColor2);
+                                renderer.drawLine(prev, cur, (segCount % 2 == 0 || desaturateLine) ? lnColor : lnColor2);
                             }
                         }
                         prev = cur;

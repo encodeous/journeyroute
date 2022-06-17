@@ -1,5 +1,6 @@
 package ca.encodeous.journeyroute.querying;
 
+import ca.encodeous.journeyroute.Config;
 import ca.encodeous.journeyroute.JourneyRoute;
 import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
 import ca.encodeous.journeyroute.utils.WorldUtils;
@@ -10,9 +11,19 @@ import oshi.util.tuples.Pair;
 import java.util.*;
 import java.util.regex.Pattern;
 
+/**
+ * A class that is responsible for handling queries from the JourneyRoute GUI
+ */
 public class QueryEngine {
+    /**
+     * A regex pattern that matches x, y, z or x, z coordinates
+     */
     private static final Pattern coordMatch = Pattern.compile("[xX\\s,.=:]*(-?\\d+)[yYzZ\\s,.=:]+(-?\\d+)[zZ\\s,.=:]*(-?\\d+)?");
     private static ArrayList<PointOfInterest> waypoints = new ArrayList<>();
+
+    /**
+     * Refreshes the list of journeymap waypoints
+     */
     public static void updateWaypoints(){
         waypoints.clear();
         for(var wp : JourneyMapPlugin.CLIENT.getAllWaypoints()){
@@ -22,8 +33,20 @@ public class QueryEngine {
             }
         }
     }
+
+    /**
+     * Gets the query result given a query string
+     * @param query the query string
+     * @return the matching results
+     */
     public static List<QueryResult> getResultsForQuery(String query){
         ArrayList<QueryResult> results = new ArrayList<>();
+        if(query.toLowerCase().trim().startsWith("load")){
+            results.add(new QueryResult(QueryResult.ResultType.LOAD_PATH));
+        }
+        if(query.toLowerCase().trim().startsWith("save")){
+            results.add(new QueryResult(QueryResult.ResultType.SAVE_PATH));
+        }
         var matcher = coordMatch.matcher(query);
         if(matcher.matches()){
             try{
@@ -35,7 +58,7 @@ public class QueryEngine {
                         int dx = x - poi.pos.getX();
                         int dz = z - poi.pos.getZ();
                         double dist = Math.sqrt(dx * dx + dz * dz);
-                        if(dist < 50){
+                        if(dist < Config.FUZZY_DISTANCE_2D){
                             poiList.add(new Pair<>(new QueryResult(poi), dist));
                         }
                     }
@@ -51,7 +74,7 @@ public class QueryEngine {
                         int dy = y - poi.pos.getY();
                         int dz = z - poi.pos.getZ();
                         double dist = Math.sqrt(dx * dx + dz * dz + dy * dy);
-                        if(dist < 100){
+                        if(dist < Config.FUZZY_DISTANCE_3D){
                             poiList.add(new Pair<>(new QueryResult(poi), dist));
                         }
                     }

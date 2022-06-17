@@ -1,7 +1,10 @@
 package ca.encodeous.journeyroute.querying;
 
-import journeymap.client.api.display.Waypoint;
 import net.minecraft.core.Vec3i;
+
+/**
+ * A class that represents data returned by the query engine
+ */
 
 public class QueryResult {
     public Vec3i position;
@@ -23,8 +26,25 @@ public class QueryResult {
     }
 
     public enum ResultType{
+        /**
+         * Represents a point of interest, such as a waypoint
+         */
         POI,
+        /**
+         * Represents a mapped coordinate
+         */
         COORDINATE,
-        NO_RESULTS
+        /**
+         * Represents that a query has fetched no results. Should be the only result returned
+         */
+        NO_RESULTS,
+        /**
+         * DEBUG: Saves the current route into a file
+         */
+        SAVE_PATH,
+        /**
+         * DEBUG: Loads the current saved route from disk
+         */
+        LOAD_PATH
     }
 }

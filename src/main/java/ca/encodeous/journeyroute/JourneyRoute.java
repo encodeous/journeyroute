@@ -1,5 +1,6 @@
 package ca.encodeous.journeyroute;
 
+import ca.encodeous.journeyroute.algorithm.SearchingAlgorithms;
 import ca.encodeous.journeyroute.client.plugin.JourneyMapPlugin;
 import ca.encodeous.journeyroute.gui.RouterGui;
 import ca.encodeous.journeyroute.gui.RouterScreen;
@@ -41,13 +42,14 @@ public class JourneyRoute implements ModInitializer {
 	// static fields
 	public static JourneyRoute INSTANCE;
 	private static PolygonOverlay overlay = null;
+	public static File journeyRouteFolder;
 	private static KeyMapping guiBinding;
 	public static Route route;
 	private static ClientLevel prevLevel = null;
 	private static int tickCount = 0;
+	private static File openWorldFile;
 	// instance fields
 	public JourneyWorld world;
-	private File openWorldFile;
 
 	/**
 	 * Called when the mod is initialized
@@ -61,11 +63,18 @@ public class JourneyRoute implements ModInitializer {
 
 		// register the keybinding in the minecraft key shortcuts
 		guiBinding = KeyBindingHelper.registerKeyBinding(new KeyMapping(
-				"Open Router", // The translation key of the keybinding's name
+				"Open Router", // name of the action
 				InputConstants.Type.KEYSYM, // The type of the keybinding, KEYSYM for keyboard, MOUSE for mouse.
 				GLFW.GLFW_KEY_R, // The keycode of the key
-				"JourneyRoute" // The translation key of the keybinding's category.
+				"JourneyRoute" // the keybinding's category
 		));
+		journeyRouteFolder = new File(Minecraft.getInstance().gameDirectory, "journeyroute");
+		if(journeyRouteFolder.exists() && !journeyRouteFolder.isDirectory()){
+			throw new RuntimeException("Unable to create journeyroute folder in the minecraft directory. Please delete any files named \"journeyroute\" at " + journeyRouteFolder.getAbsolutePath());
+		}
+		if (!journeyRouteFolder.exists()) {
+			journeyRouteFolder.mkdirs();
+		}
 		// save the journeyroute world every TICK_SAVE_INTERVAL
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			tickCount++;
@@ -97,7 +106,7 @@ public class JourneyRoute implements ModInitializer {
 		var thread = new Thread(()->{
 			try{
 				// generates the route using A*
-				var route = INSTANCE.world.getRouteTo(Minecraft.getInstance().player.blockPosition().below(), dest);
+				var route = SearchingAlgorithms.getRouteTo(INSTANCE.world, Minecraft.getInstance().player.blockPosition().below(), dest);
 				// check if the route is successfully generated
 				if(route == null || route.Path.isEmpty() || route.Path.size() == 1){
 					onCompletion.accept(false);
@@ -105,20 +114,7 @@ public class JourneyRoute implements ModInitializer {
 					JourneyRoute.route = route;
 					route.bakeRenderPath();
 					// update JourneyMap polygon
-					if(overlay != null){
-						JourneyMapPlugin.CLIENT.remove(overlay);
-					}
-					ResourceKey<Level> level = Minecraft.getInstance().level.dimension();
-					var properties = new ShapeProperties()
-							.setFillColor(Color.WHITE.getRGB())
-							.setStrokeWidth(0);
-					var pt = new ArrayList<BlockPos>();
-					for(var v : route.BakedJourneyMapPolygon){
-						pt.add(new BlockPos(v));
-					}
-					overlay = new PolygonOverlay(MODID, "jr-wp-" + route.hashCode(), level, properties, new MapPolygon(pt));
-					// draw the polygon onto the map
-					JourneyMapPlugin.CLIENT.show(overlay);
+					INSTANCE.refreshJmOverlay();
 					onCompletion.accept(true);
 				}
 			}
@@ -129,12 +125,33 @@ public class JourneyRoute implements ModInitializer {
 		thread.start();
 	}
 
+	public void refreshJmOverlay(){
+		if(route == null || Minecraft.getInstance().level == null) return;
+		if(overlay != null){
+			JourneyMapPlugin.CLIENT.remove(overlay);
+		}
+		ResourceKey<Level> level = Minecraft.getInstance().level.dimension();
+		var properties = new ShapeProperties()
+				.setFillColor(Color.WHITE.getRGB())
+				.setStrokeWidth(0);
+		var pt = new ArrayList<BlockPos>();
+		for(var v : route.BakedJourneyMapPolygon){
+			pt.add(new BlockPos(v));
+		}
+		overlay = new PolygonOverlay(MODID, "jr-wp-" + route.hashCode(), level, properties, new MapPolygon(pt));
+		try {
+			JourneyMapPlugin.CLIENT.show(overlay);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	/**
 	 * Gets the formatted journeyroute world filename for a level
 	 * @param level the level
 	 * @return a formatted file name for a level
 	 */
-	private static String getMapFileName(ClientLevel level){
+	public static String getMapFileName(ClientLevel level){
 		var sid = "";
 		if(Minecraft.getInstance().getCurrentServer() != null){
 			sid = Minecraft.getInstance().getCurrentServer().ip;
@@ -193,6 +210,40 @@ public class JourneyRoute implements ModInitializer {
 		world = new JourneyWorld();
 		world.read(buf);
 	}
+	public void saveRoute(){
+		if(route == null) return;
+		var file = new File(journeyRouteFolder, "saved-path.jrr");
+		LOGGER.info("Saving route to " + file.getAbsolutePath());
+		var buf = new UnpooledHeapByteBuf(ByteBufAllocator.DEFAULT, 0, Integer.MAX_VALUE);
+		route.write(buf);
+		try {
+			var fo = new FileOutputStream(file);
+			fo.write(buf.array(), buf.arrayOffset(), buf.readableBytes());
+			fo.close();;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	public boolean loadRoute(){
+		var file = new File(journeyRouteFolder, "saved-path.jrr");
+		if(!file.exists()){
+			return false;
+		}
+		LOGGER.info("Loading saved route from disk.");
+		ByteBuf buf = null;
+		try {
+			var str = new FileInputStream(file);
+			buf = Unpooled.wrappedBuffer(str.readAllBytes());
+			str.close();;
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		route = new Route();
+		route.read(buf);
+		refreshJmOverlay();
+		return true;
+	}
 
 	/**
 	 * Switches the internal datastructures & prepares journeymap for a new world
@@ -200,15 +251,11 @@ public class JourneyRoute implements ModInitializer {
 	 */
 	public static void startMappingFor(ClientLevel level) {
 		route = null;
+		if(route != null && !route.wasLoadedFromFile){
+			route = null;
+		}
 		if(overlay != null){
 			JourneyMapPlugin.CLIENT.remove(overlay);
-		}
-		var dir = new File(Minecraft.getInstance().gameDirectory, "journeyroute");
-		if(dir.exists() && !dir.isDirectory()){
-			throw new RuntimeException("Unable to create journeyroute folder in the minecraft directory. Please delete any files named \"journeyroute\" at " + dir.getAbsolutePath());
-		}
-		if (!dir.exists()) {
-			dir.mkdirs();
 		}
 		// save current
 		if (prevLevel != null) {
@@ -216,7 +263,8 @@ public class JourneyRoute implements ModInitializer {
 		}
 		prevLevel = level;
 		if (level != null) {
-			INSTANCE.loadMapping(dir);
+			INSTANCE.loadMapping(journeyRouteFolder);
 		}
+		INSTANCE.refreshJmOverlay();
 	}
 }

@@ -11,7 +11,14 @@ import net.minecraft.world.phys.Vec3;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A collection of utility methods that is used for querying the world
+ */
+
 public class WorldUtils {
+    /**
+     * A class that represents an internal block used by the breadth-first based neighbour block update
+     */
     public static class QueuedBlock {
         public QueuedBlock(BlockPos pos, int dist) {
             this.pos = pos;
@@ -35,6 +42,13 @@ public class WorldUtils {
 
         public int dist;
     }
+
+    /**
+     * Finds the nearest block that is mapped that has the same x-z coordinate
+     * @param world the world
+     * @param pos the block's position
+     * @return the nearest mapped block
+     */
     public static Vec3i getNearestMappedBlockVertical(JourneyWorld world, Vec3i pos) {
         int y = pos.getY();
         for(int i = 0; i < 319; i++){
@@ -45,11 +59,26 @@ public class WorldUtils {
         }
         return null;
     }
+
+    /**
+     * Offsets for 2d grid-based breadth-first search
+     */
     private static final int[] mvarr = {0, 0, 1, -1}, mvarc = {1, -1, 0, 0};
+    /**
+     * Offsets for 3d grid-based breadth-first search
+     */
     private static final int[]
             mvarr3 = {0, 0, 0, 0, 1, -1},
             mvarc3 = {0, 0, 1, -1, 0, 0},
             mvarz3 = {1, -1, 0, 0, 0, 0};
+
+    /**
+     * A method that gets the blocks that can be reached from the player given maximal travel radius
+     * @param world the world
+     * @param originPos the position of the player
+     * @param radius the maximal travel distance
+     * @return a set of the blocks that can be reached
+     */
     public static HashSet<QueuedBlock> getTraversableBlocks(Level world, Vec3i originPos, int radius){
         var visited = new HashSet<QueuedBlock>();
         if(originPos == null) return visited;
@@ -74,6 +103,13 @@ public class WorldUtils {
         return visited;
     }
 
+    /**
+     * A method that gets the blocks that can be reached from the player given maximal travel radius
+     * @param world the world
+     * @param originPos the position of the player
+     * @param radius the maximal travel distance
+     * @return a set of the blocks that can be reached
+     */
     public static List<WorldNode> getTraversableBlocks(JourneyWorld world, Vec3i originPos, int radius){
         var visited = new HashSet<QueuedBlock>();
         if(originPos == null) return Collections.emptyList();
@@ -98,6 +134,13 @@ public class WorldUtils {
         return visited.stream().map(x->world.getNode(x.pos)).toList();
     }
 
+    /**
+     * Gets the reachable air surrounding a player given maximal radius
+     * @param world the world
+     * @param originPos the player's location
+     * @param radius the maximal search radius
+     * @return a list of air blocks
+     */
     public static List<QueuedBlock> getSurroundingAir(Level world, Vec3i originPos, int radius){
         var visited = new HashSet<QueuedBlock>();
         if(originPos == null) return Collections.emptyList();
@@ -122,7 +165,13 @@ public class WorldUtils {
         }
         return visited.stream().toList();
     }
-
+    /**
+     * Gets the reachable air surrounding a player given maximal radius
+     * @param world the world
+     * @param originPos the player's location
+     * @param fallMode if true, the searcher will only search for air blocks below the player
+     * @return a list of air blocks
+     */
     public static List<WorldNode> getSurroundingAir(JourneyWorld world, Vec3i originPos, boolean fallMode){
         if(originPos == null || !world.hasNode(originPos)) return Collections.emptyList();
         var dq = new ArrayList<WorldNode>();
