@@ -52,13 +52,13 @@ public class SearchingAlgorithms {
             for(var block : WorldUtils.getSurroundingAir(world, v.pos, true)){
                 double heurWeight = cur.distSqr(dest);
                 var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
-                addNodeIfOptimal(dist, prev, nodes, v, w, block, heurWeight, nPos);
+                addAirNodeIfOptimal(dist, prev, nodes, v, w, block, heurWeight, nPos);
             }
             // searches through air blocks where the player can fly up (this is de-prioritized since players cannot fly in survival mode)
             for(var block : WorldUtils.getSurroundingAir(world, v.pos, false)){
                 double heurWeight = cur.distSqr(dest) + Config.AIR_WEIGHT;
                 var nPos = new Vec3i(block.worldX, block.worldY, block.worldZ);
-                addNodeIfOptimal(dist, prev, nodes, v, w, block, heurWeight, nPos);
+                addAirNodeIfOptimal(dist, prev, nodes, v, w, block, heurWeight, nPos);
             }
         }
         Vec3i prevNode = dest;
@@ -70,9 +70,9 @@ public class SearchingAlgorithms {
     }
 
     /**
-     * Compares weighting and adds the node to the queue if it is optimal
+     * Compares weighting of air nodes and adds the node to the queue if it is optimal
      */
-    private static void addNodeIfOptimal(HashMap<Vec3i, Double> dist, HashMap<Vec3i, Vec3i> prev, PriorityQueue<RouteNode> nodes, RouteNode v, double w, WorldNode block, double heurWeight, Vec3i nPos) {
+    private static void addAirNodeIfOptimal(HashMap<Vec3i, Double> dist, HashMap<Vec3i, Vec3i> prev, PriorityQueue<RouteNode> nodes, RouteNode v, double w, WorldNode block, double heurWeight, Vec3i nPos) {
         double newWeight = w + Math.sqrt(v.pos.distSqr(nPos)) + block.weighting + Config.AIR_WEIGHT;
         if(newWeight < dist.getOrDefault(nPos, 1e17)){
             dist.put(nPos, newWeight);
