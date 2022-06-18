@@ -98,7 +98,7 @@ public class JourneyRoute implements ModInitializer {
 	}
 
 	/**
-	 * Generates & displays a route to a destination.
+	 * Generates and displays a route to a destination.
 	 * @param dest the destination
 	 * @param onCompletion code that is executed on the completion of the pathfinding
 	 */
@@ -246,7 +246,7 @@ public class JourneyRoute implements ModInitializer {
 	}
 
 	/**
-	 * Switches the internal datastructures & prepares journeymap for a new world
+	 * Switches the internal datastructures and prepares journeymap for a new world
 	 * @param level the new world
 	 */
 	public static void startMappingFor(ClientLevel level) {

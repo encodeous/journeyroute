@@ -16,7 +16,7 @@ import net.minecraft.network.chat.TextComponent;
 import java.awt.*;
 
 /**
- * A gui component that renders & displays the results of a query
+ * A gui component that renders and displays the results of a query
  */
 public class QueryResultWidget extends WPlainPanel {
 

@@ -1,0 +1,10 @@
+ca.encodeous.journeyroute
+ca.encodeous.journeyroute.algorithm
+ca.encodeous.journeyroute.client.plugin
+ca.encodeous.journeyroute.events
+ca.encodeous.journeyroute.gui
+ca.encodeous.journeyroute.mixin
+ca.encodeous.journeyroute.querying
+ca.encodeous.journeyroute.rendering
+ca.encodeous.journeyroute.utils
+ca.encodeous.journeyroute.world
