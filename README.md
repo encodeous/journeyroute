@@ -6,13 +6,16 @@ JourneyRoute is a path-finding mod for Minecraft. With JourneyRoute, you will ne
 
 ## `Usage`
 
-To use JourneyRoute, simply copy the jar file into the mods folder. Make sure the following requirements are also met:
+To use JourneyRoute, simply copy the jar file into the `mods` folder. Make sure the following requirements are also met:
 
 ### Requirements
 
-- Fabric Mod Loader
+- Fabric Mod Loader (See <https://fabricmc.net/wiki/install>)
 - Minecraft 1.18+
-- JourneyMap installed
+- JourneyMap (See <https://www.curseforge.com/minecraft/mc-mods/journeymap/files/all?filter-game-version=2020709689%3A7499> for downloads)
+- LibGui (See <https://github.com/CottonMC/LibGui/releases> for downloads)
+
+To install JourneyRoute, download the latest release from <https://github.com/encodeous/journeyroute/releases/download/latest/journeyroute-1.0.0.jar> and copy it into the `mods` folder.
 
 ## `Is JourneyRoute Unfair?`
 
