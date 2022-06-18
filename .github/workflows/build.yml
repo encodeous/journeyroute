@@ -45,5 +45,5 @@ jobs:
           prerelease: true
           title: "Latest Build"
           files: |
-            LICENSE.txt
-            journeyroute-1.0.0.jar
+            LICENSE
+            **/journeyroute-1.0.0.jar
