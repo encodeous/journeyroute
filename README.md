@@ -32,7 +32,7 @@ JourneyRoute uses RDP polyline simplification to reduce the number of rendered v
 
 Source: <https://www.cs.unc.edu/~dm/UNC/COMP258/LECTURES/Chaikins-Algorithm.pdf>
 
-JourneyRoute uses Chaikin's algorithm to present routes in a more visually appealing manner. This is used purely for aesthetic purposes. Through the use of this algorithm, routes rendered in-game have smooth turns that is more visible compared to jagged lines. By applying multiple iterations of Chaikin's algorithm, the desired smoothness / performance ratio is reached.
+JourneyRoute uses Chaikin's algorithm to present routes in a more visually appealing manner. This is used purely for aesthetic purposes. Through the use of this algorithm, routes rendered in-game have smooth curves that are more visible compared to jagged lines. By applying multiple iterations of Chaikin's algorithm, the desired smoothness / performance ratio is reached.
 
 ### A* Heuristic Minimum Cost Path Algorithm
 
