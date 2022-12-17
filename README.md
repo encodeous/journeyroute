@@ -25,7 +25,7 @@ JourneyRoute only generates routes based on blocks that you have traversed on, t
 
 ## `Research`
 
-JourneyRoute would not have been not possible without the work of other researchers. The following papers and algorithms have been used to implement features of JourneyMap.
+JourneyRoute would not have been not possible without the work of other researchers. The following papers and algorithms have been used to implement features of JourneyRoute.
 
 ### Ramer-Douglas-Peucker Polyline Simplification
 
